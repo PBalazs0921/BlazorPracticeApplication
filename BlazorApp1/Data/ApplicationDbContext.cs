@@ -6,7 +6,10 @@ namespace BlazorApp1;
 public class ApplicationDbContext: DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options) { }
+        : base(options)
+    {
+        Database.EnsureCreated();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

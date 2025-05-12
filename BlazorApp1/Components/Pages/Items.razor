@@ -34,6 +34,17 @@ else
             <InputText id="name" class="form-control" @bind-Value="newItem.Name" />
             <ValidationMessage For="@(() => newItem.Name)" />
         </div>
+        
+        <div class="form-group">
+            <label for="name">CategoryId</label>
+            <InputNumber id="name" class="form-control" @bind-Value="newItem.CategoryId" />
+            <ValidationMessage For="@(() => newItem.CategoryId)" />
+        </div>
+        <div class="form-group">
+            <label for="name">Price</label>
+            <InputNumber id="name" class="form-control" @bind-Value="newItem.Price" />
+            <ValidationMessage For="@(() => newItem.Price)" />
+        </div>
 
         <button type="submit" class="btn btn-success mt-2">Create</button>
     </EditForm>

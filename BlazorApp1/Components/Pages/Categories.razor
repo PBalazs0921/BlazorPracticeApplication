@@ -102,7 +102,7 @@ else
     private async Task CreateCategory()
     {
         // Log to console when the form is submitted
-        Console.WriteLine($"Creating user: {editCategory.Name}");
+        Console.WriteLine($"Creating user: {newCategory.Name}");
 
         var success = CategoryLogic.CreateItem(newCategory);
         if (success)
