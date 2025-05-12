@@ -1,0 +1,136 @@
+@page "/items"
+@using System.Drawing.Printing
+@using BlazorApp1.Entities
+@using BlazorApp1.Entities.Dto
+@using BlazorApp1.Logic
+@using BlazorApp1.Components.Pages.Templates
+@inject ItemLogic ItemLogic
+@rendermode InteractiveServer
+
+<h3>Items List</h3>
+
+@if (items == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <TableTemplate 
+        InputItem="ItemViewDto"
+        InputItems="items"
+                   OnDelete="@DeleteItem"
+                   OnEdit="@EditItem"
+                   EnableActions="true"/>
+
+    
+        
+    <h3>Create New Item</h3>
+    <EditForm Model="@newItem" OnValidSubmit="HandleCreateUser">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="name">Name</label>
+            <InputText id="name" class="form-control" @bind-Value="newItem.Name" />
+            <ValidationMessage For="@(() => newItem.Name)" />
+        </div>
+
+        <button type="submit" class="btn btn-success mt-2">Create</button>
+    </EditForm>
+    
+    
+    
+    @if (isEditMode)
+    {
+        <h3>Edit Item</h3>
+        <EditForm Model="@editItem" OnValidSubmit="HandleEditUser">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="editName">Name</label>
+                <InputText id="editName" class="form-control" @bind-Value="editItem.Name" />
+                <ValidationMessage For="@(() => editItem.Name)" />
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-2">Save Changes</button>
+            <button type="button" class="btn btn-secondary mt-2" @onclick="CancelEdit">Cancel</button>
+        </EditForm>
+    }
+
+
+}
+
+
+@code {
+    private List<ItemViewDto> items;
+    private ItemCreateDto newItem = new ItemCreateDto();
+    private bool isEditMode = false ;
+    private ItemUpdateDto editItem;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItemsAsync();
+    }
+
+    private async Task LoadItemsAsync()
+    {
+        items = ItemLogic.GetAllItems().ToList();
+        StateHasChanged(); 
+    }
+
+    private async Task DeleteItem(int id)
+    {
+        // Log to console when the button is clicked
+        Console.WriteLine($"Delete button clicked for user with Id: {id}");
+
+        var success = ItemLogic.DeleteItem(id);
+        if (success)
+        {
+            await LoadItemsAsync();
+            StateHasChanged(); // Refresh the UI to reflect changes
+        }
+    }
+    
+    private async Task EditItem(int itemid)
+    {
+        var curitem = items.Where(x=> x.Id == itemid).ToList().FirstOrDefault();
+        // Pre-fill the form with the user's current data
+        editItem = new ItemUpdateDto { Id = curitem.Id, Name = curitem.Name };
+        isEditMode = true;
+    }
+
+
+    private async Task HandleCreateUser()
+    {
+        // Log to console when the form is submitted
+        Console.WriteLine($"Creating user: {newItem.Name}");
+
+        var success = ItemLogic.CreateItem(newItem);
+        if (success)
+        {
+            await LoadItemsAsync();
+            newItem = new ItemCreateDto(); // Reset the form
+        }
+    }
+
+    private async Task HandleEditUser()
+    {
+        // Log to console when the form is submitted
+        Console.WriteLine($"Editing user: {editItem.Name}");
+
+        var success = ItemLogic.UpdateItem(editItem);
+        if (success)
+        {
+            await LoadItemsAsync();
+            isEditMode = false; // Exit edit mode
+            StateHasChanged();
+        }
+    }
+
+    private void CancelEdit()
+    {
+        // Cancel editing and return to the list
+        isEditMode = false;
+    }
+}
