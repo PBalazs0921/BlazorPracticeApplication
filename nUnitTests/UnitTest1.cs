@@ -1,4 +1,4 @@
-t namespace nUnitTests;
+namespace nUnitTests;
 
 public class Tests
 {
