@@ -20,7 +20,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore BlazorApp1.sln
 
       - name: Build the app
-        run: dotnet build --configuration Release
+        run: dotnet build BlazorApp1.sln --configuration Release --no-restore
