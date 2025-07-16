@@ -12,7 +12,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySQL(builder.Configuration.GetConnectionString("AzurDb"))
+    options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 builder.Services.AddTransient<DtoProvider>();
 
