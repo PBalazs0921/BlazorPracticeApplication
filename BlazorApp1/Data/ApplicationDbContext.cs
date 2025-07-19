@@ -1,9 +1,11 @@
 using BlazorApp1.Entities;
+using BlazorApp1.Entities.Helper;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazorApp1;
 
-public class ApplicationDbContext: DbContext
+public class ApplicationDbContext : IdentityDbContext<AppUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
