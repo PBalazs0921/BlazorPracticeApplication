@@ -28,16 +28,8 @@ public class CategoryController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<CategoryViewDto>> Get()
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user != null)
-        {
-            return categoryLogic.GetAllItems();
-        }
-        else
-        {
-            // Handle the case when the user is not found
-            // For example, return an error response or throw an exception
+
             throw new Exception("User not found");
-        }
+        
     }
 }

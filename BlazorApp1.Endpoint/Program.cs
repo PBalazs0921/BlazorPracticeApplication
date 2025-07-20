@@ -2,6 +2,7 @@ using System.Text;
 using BlazorApp1;
 using BlazorApp1.Data;
 using BlazorApp1.Entities.Helper;
+using BlazorApp1.Logic;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -72,11 +73,16 @@ builder.Services.AddAuthentication(option =>
     });
 
 
-
+//DB context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 builder.Services.AddTransient(typeof(Repository<>));
+
+builder.Services.AddTransient<DtoProvider>();
+
+builder.Services.AddTransient<CategoryLogic>();
+
 builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
