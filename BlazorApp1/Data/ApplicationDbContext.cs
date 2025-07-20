@@ -1,18 +1,27 @@
 using BlazorApp1.Entities;
+using BlazorApp1.Entities.Helper;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazorApp1;
 
-public class ApplicationDbContext: DbContext
+public class ApplicationDbContext : IdentityDbContext
 {
+    public DbSet<AppUser> AppUsers { get; set; }
+    public DbSet<Item> Items { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<Booking> Bookings { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
+        //Database.EnsureDeleted();
         Database.EnsureCreated();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Booking>()
             .HasOne(b => b.User)
             .WithMany()          
@@ -25,8 +34,5 @@ public class ApplicationDbContext: DbContext
     }
 
 
-    public DbSet<Item> Items { get; set; }
-    public DbSet<User> Users { get; set; }
-    public DbSet<Category> Categories { get; set; }
-    public DbSet<Booking> Bookings { get; set; }
+
 }
