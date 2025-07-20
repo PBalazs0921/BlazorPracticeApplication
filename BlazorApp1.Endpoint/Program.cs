@@ -1,5 +1,6 @@
 using System.Text;
 using BlazorApp1;
+using BlazorApp1.Data;
 using BlazorApp1.Entities.Helper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -16,6 +17,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+//SWAGGER, TOKEN
 builder.Services.AddSwaggerGen(option =>
 {
     option.SwaggerDoc("v1", new OpenApiInfo { Title = "MovieClub API", Version = "v1" });
@@ -44,6 +47,8 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
+
+//AUTH
 builder.Services.AddAuthentication(option =>
     {
         option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -67,10 +72,11 @@ builder.Services.AddAuthentication(option =>
     });
 
 
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
-
+builder.Services.AddTransient(typeof(Repository<>));
 builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()

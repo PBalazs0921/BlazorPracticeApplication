@@ -41,13 +41,19 @@ public class UserController : ControllerBase
             GivenName = "",
             RefreshToken = ""
         };
-        await userManager.CreateAsync(user, dto.Password);
-
-        if (userManager.Users.Count() == 1)
+        var result = await userManager.CreateAsync(user, dto.Password);
+        
+            if (userManager.Users.Count() == 1)
         {
             await roleManager.CreateAsync(new IdentityRole("Admin"));
             await userManager.AddToRoleAsync(user, "Admin");
         }
+
+        if (!result.Succeeded)
+        {
+            throw new Exception(result.Errors.ToString());
+        }
+        
     }
 
     [HttpPost("login")]
