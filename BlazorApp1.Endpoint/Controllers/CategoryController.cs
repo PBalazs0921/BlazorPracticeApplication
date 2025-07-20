@@ -1,4 +1,5 @@
 using BlazorApp1.Entities.Dto;
+using BlazorApp1.Entities.Helper;
 using BlazorApp1.Logic;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +12,10 @@ namespace BlazorApp1.Endpoint.Controllers;
 public class CategoryController : ControllerBase
 {
     
-    private UserManager<IdentityUser> userManager;
+    private UserManager<AppUser> userManager;
     private CategoryLogic categoryLogic;
     
-    public CategoryController(UserManager<IdentityUser> userManager, CategoryLogic categoryLogic)
+    public CategoryController(UserManager<AppUser> userManager, CategoryLogic categoryLogic)
     {
         this.userManager = userManager;
         this.categoryLogic = categoryLogic;
