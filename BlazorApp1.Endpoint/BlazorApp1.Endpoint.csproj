@@ -13,6 +13,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\BlazorApp1.Data\BlazorApp1.Data.csproj" />
+      <ProjectReference Include="..\BlazorApp1.Entities\BlazorApp1.Entities.csproj" />
+      <ProjectReference Include="..\BlazorApp1.Logic\BlazorApp1.Logic.csproj" />
       <ProjectReference Include="..\BlazorApp1\BlazorApp1.csproj" />
     </ItemGroup>
 

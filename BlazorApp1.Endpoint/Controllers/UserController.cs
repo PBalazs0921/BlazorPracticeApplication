@@ -18,6 +18,7 @@ namespace BlazorApp1.Controllers;
 public class UserController : ControllerBase
 {
     
+    
     private UserManager<AppUser> userManager;
     private RoleManager<IdentityRole> roleManager;
     private IConfiguration configuration;

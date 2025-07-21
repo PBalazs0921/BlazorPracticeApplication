@@ -5,7 +5,6 @@
 @using BlazorApp1.Logic
 @using BlazorApp1.Components.Pages.Templates
 @using BlazorApp1.Components.Pages.Templates
-@inject CategoryLogic CategoryLogic
 @rendermode InteractiveServer
 
 <h3>Categories List</h3>
@@ -42,7 +41,7 @@ else
     @if (isEditMode)
     {
         <h3>Edit User</h3>
-        <EditForm Model="@editCategory" OnValidSubmit="HandleEditUser">
+        <EditForm Model="@editCategory" OnValidSubmit="HandleEditItem">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
@@ -60,8 +59,11 @@ else
 
 }
 
-
+@inject IHttpClientFactory HttpClientFactory
 @code {
+    private HttpClient Http;
+    
+
     private List<CategoryViewDto> categories;
     private CategoryCreateDto newCategory = new CategoryCreateDto();
     private bool isEditMode = false;
@@ -69,62 +71,78 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        Http = HttpClientFactory.CreateClient("MyAPI");
         await LoadItemsAsync();
     }
 
     private async Task LoadItemsAsync()
     {
-        categories = CategoryLogic.GetAllItems().ToList();
+        categories = await Http.GetFromJsonAsync<List<CategoryViewDto>>("Category");
+
+     //   categories = CategoryLogic.GetAllItems().ToList();
     }
 
     private async Task DeleteItem(int id)
     {
-        // Log to console when the button is clicked
-        Console.WriteLine($"Delete button clicked for user with Id: {id}");
+        Console.WriteLine($"Delete button clicked for category with Id: {id}");
 
-        var success = CategoryLogic.DeleteCategory(id);
-        if (success)
+        var response = await Http.DeleteAsync($"Category/Delete?id={id}");
+        if (response.IsSuccessStatusCode)
         {
             await LoadItemsAsync();
-            StateHasChanged(); // Refresh the UI to reflect changes
-        }
-    }
-    
-    private async Task EditItem(int itemid)
-    {
-        var curitem = categories.Where(x=> x.Id == itemid).ToList().FirstOrDefault();
-        // Pre-fill the form with the user's current data
-        editCategory = new CategoryUpdateDto { Id = curitem.Id, Name = curitem.Name };
-        isEditMode = true;
-    }
-
-
-    private async Task CreateCategory()
-    {
-        // Log to console when the form is submitted
-        Console.WriteLine($"Creating user: {newCategory.Name}");
-
-        var success = CategoryLogic.CreateItem(newCategory);
-        if (success)
-        {
-            await LoadItemsAsync();
-            newCategory = new CategoryCreateDto(); // Reset the form
-        }
-    }
-
-    private async Task HandleEditUser()
-    {
-        // Log to console when the form is submitted
-        Console.WriteLine($"Editing user: {editCategory.Name}");
-
-        var success = CategoryLogic.UpdateItem(editCategory);
-        if (success)
-        {
-            await LoadItemsAsync();
-            isEditMode = false; // Exit edit mode
             StateHasChanged();
         }
     }
+    
+    private async Task CreateCategory()
+    {
+        Console.WriteLine($"Creating category: {newCategory.Name}");
+
+        var response = await Http.PostAsJsonAsync("Category/Create", newCategory);
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadItemsAsync();
+            newCategory = new CategoryCreateDto(); // Reset form
+        }
+        else
+        {
+            Console.WriteLine("Failed to create category.");
+        }
+    }
+
+    private async Task EditItem(int itemId)
+    {
+        var curItem = categories.FirstOrDefault(x => x.Id == itemId);
+        if (curItem != null)
+        {
+            editCategory = new CategoryUpdateDto
+            {
+                Id = curItem.Id,
+                Name = curItem.Name
+            };
+            isEditMode = true;
+        }
+    }
+
+
+    private async Task HandleEditItem()
+    {
+        Console.WriteLine($"Editing category: {editCategory.Name}");
+
+        var response = await Http.PutAsJsonAsync("Category/Edit", editCategory);
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadItemsAsync();
+            isEditMode = false;
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("Failed to update category.");
+        }
+    }
+
+
 
     private void CancelEdit()
     {

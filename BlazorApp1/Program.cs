@@ -27,6 +27,11 @@ builder.Services.AddScoped<CategoryLogic>();
 builder.Services.AddScoped<Repository<Booking>>();
 builder.Services.AddScoped<BookingLogic>();
 
+builder.Services.AddHttpClient("MyAPI", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7011/");
+});
+
 
 
 
