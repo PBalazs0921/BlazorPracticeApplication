@@ -1,25 +1,20 @@
 using AutoMapper;
 using BlazorApp1.Data;
-using BlazorApp1.Entities;
 using BlazorApp1.Entities.Dto;
+using BlazorApp1.Entities.Entity;
+using BlazorApp1.Logic.Dto;
 
 namespace BlazorApp1.Logic;
 
-public class BookingLogic
+public class BookingLogic(Repository<Booking> repository, DtoProvider dtoProvider)
 {
-    private readonly Repository<Booking> _repository;
-    public Mapper mapper;
+    private readonly Mapper _mapper = dtoProvider.mapper;
 
-    public BookingLogic(Repository<Booking> repository,DtoProvider dtoProvider)
-    {
-        _repository = repository;
-        mapper = dtoProvider.mapper;
-    }
-
-    public IEnumerable<BookingViewDto> GetAllBookings()
+    public async Task<IEnumerable<BookingViewDto>> GetAllBookingsAsync()
     {
         Console.WriteLine("GetAllItems called");
-        return _repository.GetAll().Select(x=> mapper.Map<BookingViewDto>(x));
+        var bookings = await repository.GetAllAsync();
+        return bookings.Select(x => _mapper.Map<BookingViewDto>(x));
     }
 
     private bool IsBookingValid(Booking booking, int? editId = null)
@@ -31,8 +26,8 @@ public class BookingLogic
             return false;
         }
         
-        var Bookings = _repository.GetAll().Where(x => x.ItemId == booking.ItemId && x.Id != editId);
-        if (Bookings.Count() < 1)
+        var Bookings = repository.GetAll().Where(x => x.ItemId == booking.ItemId && x.Id != editId);
+        if (!Bookings.Any())
         {
             //If there are no booking for the item, the booking is valid
             return true;
@@ -40,7 +35,7 @@ public class BookingLogic
         else
         {
             Console.WriteLine("found: " + Bookings.Count() + " bookings");
-            //if there are bookings, we have check.
+            //if there are bookings, we have checked.
             //If the latest toDate is equals, or 1 day before the current. its valid
             
             var latestBooking = Bookings.OrderByDescending(x => x.ToDate).FirstOrDefault();
@@ -56,7 +51,7 @@ public class BookingLogic
                 return true;
             }
             
-            // if the earlyest booking's from date is equal to or 1 day before the currentBooking's to date
+            // if the earliest booking's from date is equal to or 1 day before the currentBooking's to date
             if (earliestBooking.FromDate.Date == booking.ToDate.Date || earliestBooking.FromDate.Date == booking.ToDate.Date.AddDays(1))
             {
                 return true;
@@ -66,51 +61,45 @@ public class BookingLogic
             return false;
         }
     }
-
-    public bool CreateBooking(BookingCreateDto dto)
+    
+    public async Task<bool> CreateBookingAsync(BookingCreateDto dto)
     {
-        Console.WriteLine("CreateBooking called");
-        
-        var NewBooking = mapper.Map<Booking>(dto);
-
-        if (IsBookingValid(NewBooking))
+        var item = _mapper.Map<Booking>(dto);
+        if (IsBookingValid(item))
         {
-            _repository.Create(NewBooking);
+            await repository.CreateAsync(item);
             return true;
         }
         else
         {
             throw new Exception("Booking is not valid");
         }
+        
+    }
+    
+    public async Task<bool> UpdateBookingAsync(BookingUpdateDto booking)
+    {
+        Console.WriteLine("UpdateBookingAsync called");
+        var item = await repository.FindByIdAsync(booking.Id);
+        if (item == null)             throw new Exception("Booking not found");
+
+        if (IsBookingValid(_mapper.Map<Booking>(booking), booking.Id))
+        {
+            _mapper.Map(booking, item);
+            await repository.UpdateAsync(item);
+            return true;
+        }
+
+        throw new Exception("Booking is not valid");
+        
     }
 
-    public bool UpdateBooking(BookingUpdateDto booking)
+    public async Task<bool> DeleteItemAsync(int id)
     {
-        Console.WriteLine("UpdateBooking called");
-        var item = _repository.FindById(booking.Id);
-        Console.WriteLine("ID of the booking that I update" + booking.Id);
+        var item = await repository.FindByIdAsync(id);
         if (item == null) return false;
-        // Update the properties of the item
-        
-        var BookingToUpdate = _repository.FindById(booking.Id);
-        if (BookingToUpdate != null && BookingToUpdate.Id == booking.Id)
-        {
-            mapper.Map(booking, BookingToUpdate);
-            _repository.Update(BookingToUpdate);
-        }
-        else
-        {
-            throw new Exception("Booking not found");
-        }
+        await repository.DeleteAsync(item);
         return true;
     }
     
-    public bool DeleteItem(int id)
-    {
-        Console.WriteLine("DeleteItem pressed: " + id);
-        var item = _repository.FindById(id);
-        if (item == null) return false;
-        _repository.Delete(item);
-        return true;
-    }
 }

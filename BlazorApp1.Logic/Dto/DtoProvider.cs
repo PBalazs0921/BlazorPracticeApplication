@@ -1,8 +1,9 @@
 using AutoMapper;
 using BlazorApp1.Entities;
 using BlazorApp1.Entities.Dto;
+using BlazorApp1.Entities.Entity;
 
-namespace BlazorApp1.Logic;
+namespace BlazorApp1.Logic.Dto;
 
 public class DtoProvider
 {

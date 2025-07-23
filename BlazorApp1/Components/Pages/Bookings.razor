@@ -133,15 +133,17 @@ else
 
     private async Task LoadUsersAsync()
     {
-        bookings = BookingLogic.GetAllBookings().ToList();
+        var result = await BookingLogic.GetAllBookingsAsync();
+        bookings = result.ToList();
     }
+
 
     private async Task DeleteBooking(int id)
     {
         Console.WriteLine($"Delete button clicked for user with Id: {id}");
 
-        var success = BookingLogic.DeleteItem(id);
-        if (success)
+        var success = BookingLogic.DeleteItemAsync(id);
+        if (success.Result==true)
         {
             await LoadUsersAsync();
             StateHasChanged(); 
@@ -153,7 +155,7 @@ else
         try
         {
             Console.WriteLine($"Creating bookin");
-            var success = BookingLogic.CreateBooking(newBooking);
+            var success = await BookingLogic.CreateBookingAsync(newBooking);
 
 
             if (success)
@@ -197,8 +199,8 @@ else
         // Log to console when the form is submitted
         Console.WriteLine($"Editing user: {editBooking.Comment}");
 
-        var success = BookingLogic.UpdateBooking(editBooking);
-        if (success)
+        var success = BookingLogic.UpdateBookingAsync(editBooking);
+        if (success.Result)
         {
             await LoadUsersAsync();
             isEditMode = false;

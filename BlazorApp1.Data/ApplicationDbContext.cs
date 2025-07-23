@@ -1,9 +1,9 @@
-using BlazorApp1.Entities;
+using BlazorApp1.Entities.Entity;
 using BlazorApp1.Entities.Helper;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace BlazorApp1;
+namespace BlazorApp1.Data;
 
 public class ApplicationDbContext : IdentityDbContext
 {

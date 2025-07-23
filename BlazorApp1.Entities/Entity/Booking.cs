@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using BlazorApp1.Entities.Helper;
 
-namespace BlazorApp1.Entities;
+namespace BlazorApp1.Entities.Entity;
 
 public class Booking : IIdEntity
 {
@@ -15,6 +15,7 @@ public class Booking : IIdEntity
     public int UserId { get; set; }
     public int ItemId { get; set; }
     public int Price { get; set; }
-    public string Comment { get; set; }
-    public User User { get; set; }
+    public string? Comment { get; set; }
+    [Required]
+    public required User User { get; set; }
 }

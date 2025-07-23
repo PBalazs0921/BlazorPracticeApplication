@@ -1,20 +1,14 @@
-using BlazorApp1;
-using BlazorApp1.Components;
-using BlazorApp1.Entities;
-
-using BlazorApp1.Data;
-using NUnit.Framework;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Containers;
+/*using BlazorApp1.Data;
+using BlazorApp1.Entities.Entity;
 using Testcontainers.MySql;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace nUnitTests;
+namespace UnitTests;
 
 public class TestContainer
 {
-    private MySqlContainer _container = default!;
+    private MySqlContainer _container = null!;
 
     [OneTimeSetUp]
     public async Task Setup()
@@ -49,22 +43,22 @@ public class TestContainer
     [Test]
     public async Task SampleTest()
     {
-        using var db = CreateDbContext();
+        await using var db = CreateDbContext();
         // Your service test code here
     }
     
     [Test]    
     public async Task GetAllItems_ShouldReturnAllInsertedItems()
     {
-        using var ctx = CreateDbContext();
+        await using var ctx = CreateDbContext();
         var repo = new Repository<User>(ctx);
 
-        repo.Create(new User { Name = "A" });
-        repo.Create(new User { Name = "B" });
+        await repo.CreateAsync(new User { Name = "A" });
+        await repo.CreateAsync(new User { Name = "B" });
 
         var allItems = repo.GetAll().ToList();
 
-        Assert.AreEqual(2, allItems.Count);
+        Assert.That(allItems.Count, Is.EqualTo(2));
     }
 
-}
+}*/

@@ -9,35 +9,23 @@ namespace BlazorApp1.Endpoint.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class CategoryController : ControllerBase
+public class CategoryController(UserManager<AppUser> userManager, ICategoryLogic categoryLogic)
+    : ControllerBase
 {
     
-    private UserManager<AppUser> userManager;
-    private CategoryLogic categoryLogic;
+    private UserManager<AppUser> _userManager = userManager;
     
-    public CategoryController(UserManager<AppUser> userManager, CategoryLogic categoryLogic)
+    [HttpGet("GetAll")]
+    public async Task<IEnumerable<CategoryViewDto>> GetAllAsync()
     {
-        this.userManager = userManager;
-        this.categoryLogic = categoryLogic;
-    }
-    
-    [HttpPost]
-    public async Task Post([FromBody]CategoryCreateDto dto)
-    {
-        categoryLogic.CreateItem(dto);
-    }
-    
-    [HttpGet]
-    public async Task<IEnumerable<CategoryViewDto>> Get()
-    {
-        return categoryLogic.GetAllItems();
+        return await categoryLogic.GetAllItemsAsync();
         
     }
     
     [HttpPut("Edit")]
     public async Task<IActionResult> Edit([FromBody] CategoryUpdateDto dto)
     {
-        var success = categoryLogic.UpdateItem(dto);
+        var success = await categoryLogic.UpdateItemAsync(dto);
     
         if (success)
             return Ok();
@@ -48,9 +36,9 @@ public class CategoryController : ControllerBase
     [HttpPost("Create")]
     public async Task<IActionResult> Create([FromBody] CategoryCreateDto dto)
     {
-        var result = categoryLogic.CreateItem(dto);
+        var result = await categoryLogic.CreateItemAsync(dto);
 
-        if (result)
+        if (result.Id!= null)
             return Ok();
         else
             return BadRequest("Failed to create category.");
@@ -60,7 +48,8 @@ public class CategoryController : ControllerBase
     [HttpDelete("Delete")]
     public async Task<bool> Delete([FromQuery] int id)
     {
-        return categoryLogic.DeleteCategory(id);
+        var result = await categoryLogic.DeleteCategoryAsync(id);
+        return result;
     }
 
 }

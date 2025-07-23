@@ -1,3 +1,5 @@
+using BlazorApp1.Entities.Entity;
+
 namespace BlazorApp1.Entities.Dto;
 
 public class BookingViewDto

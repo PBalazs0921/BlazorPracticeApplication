@@ -1,8 +1,8 @@
 using System.Text;
-using BlazorApp1;
 using BlazorApp1.Data;
 using BlazorApp1.Entities.Helper;
 using BlazorApp1.Logic;
+using BlazorApp1.Logic.Dto;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -32,20 +32,16 @@ builder.Services.AddSwaggerGen(option =>
         BearerFormat = "JWT",
         Scheme = "Bearer"
     });
-    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    var requirement = new OpenApiSecurityRequirement();
+    requirement.Add(new OpenApiSecurityScheme
     {
+        Reference = new OpenApiReference
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] { }
+            Type = ReferenceType.SecurityScheme,
+            Id = "Bearer"
         }
-    });
+    }, new string[] { });
+    option.AddSecurityRequirement(requirement);
 });
 
 
@@ -74,8 +70,12 @@ builder.Services.AddAuthentication(option =>
 
 
 //DB context
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+    throw new InvalidOperationException("Connection string 'DefaultConnection' is missing.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseMySQL(connectionString)
 );
 builder.Services.AddTransient(typeof(Repository<>));
 
