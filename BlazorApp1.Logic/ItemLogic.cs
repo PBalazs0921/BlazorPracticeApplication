@@ -1,53 +1,48 @@
 using AutoMapper;
 using BlazorApp1.Data;
-using BlazorApp1.Entities;
 using BlazorApp1.Entities.Dto;
+using BlazorApp1.Entities.Entity;
+using BlazorApp1.Logic.Dto;
 
 namespace BlazorApp1.Logic;
 
-public class ItemLogic
+public class ItemLogic(Repository<Item> repository, DtoProvider dtoProvider)
 {
-    private readonly Repository<Item> _repository;
-    public Mapper mapper;
+    private readonly Mapper _mapper = dtoProvider.mapper;
 
-    public ItemLogic(Repository<Item> repository,DtoProvider dtoProvider)
+    public async Task<int?> CreateItemAsync(ItemCreateDto dto)
     {
-        _repository = repository;
-        mapper = dtoProvider.mapper;
+        var item = _mapper.Map<Item>(dto);
+        await repository.CreateAsync(item);
+        return item.Id;
     }
-
-    public bool CreateItem(ItemCreateDto dto)
+    
+    public async Task<IEnumerable<ItemViewDto>> GetAllItemsAsync()
     {
-        var Item = mapper.Map<Item>(dto);
-        _repository.Create(Item);
-        return true;
+        Console.WriteLine("GetAllItemsAsync called");
+        var allItems = await repository.GetAllAsync();
+        return allItems.Select(x => _mapper.Map<ItemViewDto>(x));
     }
-
-    public IEnumerable<ItemViewDto> GetAllItems()
+    public async Task<bool> UpdateItemAsync(ItemUpdateDto dto)
     {
-        Console.WriteLine("GetAllItems called");
-        return _repository.GetAll().Select(x=> mapper.Map<ItemViewDto>(x));
-    }
-
-    public bool UpdateItem(ItemUpdateDto dto)
-    {
-        var ItemToUpdate = _repository.FindById(dto.Id);
-        if (ItemToUpdate != null && ItemToUpdate.Id == dto.Id)
+        var itemToUpdate = await repository.FindByIdAsync(dto.Id);
+        if (itemToUpdate != null)
         {
-            mapper.Map(dto, ItemToUpdate);
-            _repository.Update(ItemToUpdate);
+            _mapper.Map(dto, itemToUpdate);
+            await repository.UpdateAsync(itemToUpdate);
             return true;
         }
         return false;
     }
 
-    public bool DeleteItem(int id)
+    public async Task<bool> DeleteItemAsync(int id)
     {
         Console.WriteLine("DeleteItem pressed: " + id);
-        var item = _repository.FindById(id);
+    
+        var item = await repository.FindByIdAsync(id);
         if (item == null) return false;
 
-        _repository.Delete(item);
+        await repository.DeleteAsync(item);
         return true;
     }
 }

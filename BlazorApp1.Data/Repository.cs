@@ -1,55 +1,70 @@
 using BlazorApp1.Entities.Helper;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlazorApp1.Data;
 
 public class Repository<T> where T : class, IIdEntity
 {
-    ApplicationDbContext ctx;
+    private readonly ApplicationDbContext ctx;
 
     public Repository(ApplicationDbContext ctx)
     {
         this.ctx = ctx;
     }
 
-    public void Create(T entity)
+    public async Task CreateAsync(T entity)
     {
         ctx.Set<T>().Add(entity);
-        ctx.SaveChanges();
+        await ctx.SaveChangesAsync();
     }
 
-    public T FindById(int id)
+    public async Task CreateManyAsync(IEnumerable<T> entities)
     {
-        return ctx.Set<T>().First(t => t.Id == id);
+        ctx.Set<T>().AddRange(entities);
+        await ctx.SaveChangesAsync();
     }
-
-    public void DeleteById(int id)
-    {
-        var entity = FindById(id);
-        ctx.Set<T>().Remove(entity);
-        ctx.SaveChanges();
-    }
-
-    public void Delete(T entity)
-    {
-        ctx.Set<T>().Remove(entity);
-        ctx.SaveChanges();
-    }
-
     public IQueryable<T> GetAll()
     {
         return ctx.Set<T>();
     }
 
-    public void Update(T entity)
+    public async Task<T?> FindByIdAsync(int id)
     {
-        var old = FindById(entity.Id);
-        foreach (var prop in typeof(T).GetProperties())
+        return await ctx.Set<T>().FirstOrDefaultAsync(t => t.Id == id);
+    }
+
+    public async Task<List<T>> GetAllAsync()
+    {
+        return await ctx.Set<T>().ToListAsync();
+    }
+
+    public async Task DeleteAsync(T entity)
+    {
+        ctx.Set<T>().Remove(entity);
+        await ctx.SaveChangesAsync();
+    }
+
+    public async Task DeleteByIdAsync(int id)
+    {
+        var entity = await FindByIdAsync(id);
+        if (entity != null)
         {
-            prop.SetValue(old, prop.GetValue(entity));
+            ctx.Set<T>().Remove(entity);
+            await ctx.SaveChangesAsync();
         }
-        ctx.Set<T>().Update(old);
-        ctx.SaveChanges();
-    }   
+    }
+
+    public async Task UpdateAsync(T entity)
+    {
+        var old = await FindByIdAsync(entity.Id);
+        if (old != null)
+        {
+            foreach (var prop in typeof(T).GetProperties())
+            {
+                prop.SetValue(old, prop.GetValue(entity));
+            }
+            ctx.Set<T>().Update(old);
+            await ctx.SaveChangesAsync();
+        }
+    }
 }
-
-

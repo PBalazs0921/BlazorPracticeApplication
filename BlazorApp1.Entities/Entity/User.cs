@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using BlazorApp1.Entities.Helper;
 
-namespace BlazorApp1.Entities;
+namespace BlazorApp1.Entities.Entity;
 
 public class User:IIdEntity
 {
@@ -11,6 +11,6 @@ public class User:IIdEntity
     public int Id { get; set; }
     
     [Required]
-    public string Name { get; set; }
+    public required string Name { get; set; }
 }
 

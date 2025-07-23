@@ -1,8 +1,9 @@
 using BlazorApp1;
 using BlazorApp1.Components;
 using BlazorApp1.Data;
-using BlazorApp1.Entities;
+using BlazorApp1.Entities.Entity;
 using BlazorApp1.Logic;
+using BlazorApp1.Logic.Dto;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,9 +11,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+    throw new InvalidOperationException("Connection string 'DefaultConnection' is missing.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseMySQL(connectionString)
 );
+
+
 builder.Services.AddTransient<DtoProvider>();
 
 builder.Services.AddScoped<Repository<User>>();

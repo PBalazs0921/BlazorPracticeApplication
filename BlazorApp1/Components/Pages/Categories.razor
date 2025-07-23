@@ -1,15 +1,11 @@
 @page "/Categories"
-@using System.Drawing.Printing
-@using BlazorApp1.Entities
 @using BlazorApp1.Entities.Dto
-@using BlazorApp1.Logic
-@using BlazorApp1.Components.Pages.Templates
 @using BlazorApp1.Components.Pages.Templates
 @rendermode InteractiveServer
 
 <h3>Categories List</h3>
 
-@if (categories == null)
+@if (_categories == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -17,7 +13,7 @@ else
 {
     <TableTemplate 
         InputItem="CategoryViewDto"
-        InputItems="categories"
+        InputItems="_categories"
                    OnDelete="@DeleteItem"
                    OnEdit="@EditItem"
                    EnableActions="true"/>
@@ -25,30 +21,30 @@ else
     
         
     <h3>Create New Category</h3>
-    <EditForm Model="@newCategory" OnValidSubmit="CreateCategory">
+    <EditForm Model="@_newCategory" OnValidSubmit="CreateCategory">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <div class="form-group">
             <label for="name">Name</label>
-            <InputText id="name" class="form-control" @bind-Value="newCategory.Name" />
-            <ValidationMessage For="@(() => newCategory.Name)" />
+            <InputText id="name" class="form-control" @bind-Value="_newCategory.Name" />
+            <ValidationMessage For="@(() => _newCategory.Name)" />
         </div>
 
         <button type="submit" class="btn btn-success mt-2">Create</button>
     </EditForm>
     
-    @if (isEditMode)
+    @if (_isEditMode)
     {
         <h3>Edit User</h3>
-        <EditForm Model="@editCategory" OnValidSubmit="HandleEditItem">
+        <EditForm Model="@_editCategory" OnValidSubmit="HandleEditItem">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
             <div class="form-group">
                 <label for="editName">Name</label>
-                <InputText id="editName" class="form-control" @bind-Value="editCategory.Name" />
-                <ValidationMessage For="@(() => editCategory.Name)" />
+                <InputText id="editName" class="form-control" @bind-Value="_editCategory!.Name" />
+                <ValidationMessage For="@(() => _editCategory.Name)" />
             </div>
 
             <button type="submit" class="btn btn-primary mt-2">Save Changes</button>
@@ -61,24 +57,28 @@ else
 
 @inject IHttpClientFactory HttpClientFactory
 @code {
-    private HttpClient Http;
+    private HttpClient? _http;
     
 
-    private List<CategoryViewDto> categories;
-    private CategoryCreateDto newCategory = new CategoryCreateDto();
-    private bool isEditMode = false;
-    private CategoryUpdateDto editCategory;
+    
+    private List<CategoryViewDto>? _categories;
+    private CategoryCreateDto _newCategory = new CategoryCreateDto();
+    private bool _isEditMode;
+    private CategoryUpdateDto? _editCategory;
 
     protected override async Task OnInitializedAsync()
     {
-        Http = HttpClientFactory.CreateClient("MyAPI");
+        _http = HttpClientFactory.CreateClient("MyAPI");
         await LoadItemsAsync();
     }
 
     private async Task LoadItemsAsync()
     {
-        categories = await Http.GetFromJsonAsync<List<CategoryViewDto>>("Category");
-
+        _categories = await _http!.GetFromJsonAsync<List<CategoryViewDto>>("Category");
+        if (_categories == null)
+        {
+            throw new Exception("Failed to load categories from API.");
+        }
      //   categories = CategoryLogic.GetAllItems().ToList();
     }
 
@@ -86,7 +86,7 @@ else
     {
         Console.WriteLine($"Delete button clicked for category with Id: {id}");
 
-        var response = await Http.DeleteAsync($"Category/Delete?id={id}");
+        var response = await _http!.DeleteAsync($"Category/Delete?id={id}");
         if (response.IsSuccessStatusCode)
         {
             await LoadItemsAsync();
@@ -96,13 +96,13 @@ else
     
     private async Task CreateCategory()
     {
-        Console.WriteLine($"Creating category: {newCategory.Name}");
+        Console.WriteLine($"Creating category: {_newCategory.Name}");
 
-        var response = await Http.PostAsJsonAsync("Category/Create", newCategory);
+        var response = await _http!.PostAsJsonAsync("Category/Create", _newCategory);
         if (response.IsSuccessStatusCode)
         {
             await LoadItemsAsync();
-            newCategory = new CategoryCreateDto(); // Reset form
+            _newCategory = new CategoryCreateDto(); // Reset form
         }
         else
         {
@@ -110,30 +110,31 @@ else
         }
     }
 
-    private async Task EditItem(int itemId)
+    private void EditItem(int itemId)
     {
-        var curItem = categories.FirstOrDefault(x => x.Id == itemId);
+        var curItem = _categories?.FirstOrDefault(x => x.Id == itemId);
         if (curItem != null)
         {
-            editCategory = new CategoryUpdateDto
+            _editCategory = new CategoryUpdateDto
             {
                 Id = curItem.Id,
                 Name = curItem.Name
             };
-            isEditMode = true;
+            _isEditMode = true;
         }
     }
 
 
     private async Task HandleEditItem()
     {
-        Console.WriteLine($"Editing category: {editCategory.Name}");
+        if(_editCategory==null) throw new Exception("Edit category is null");
+        Console.WriteLine($"Editing category: {_editCategory.Name}");
 
-        var response = await Http.PutAsJsonAsync("Category/Edit", editCategory);
+        var response = await _http!.PutAsJsonAsync("Category/Edit", _editCategory);
         if (response.IsSuccessStatusCode)
         {
             await LoadItemsAsync();
-            isEditMode = false;
+            _isEditMode = false;
             StateHasChanged();
         }
         else
@@ -147,6 +148,6 @@ else
     private void CancelEdit()
     {
         // Cancel editing and return to the list
-        isEditMode = false;
+        _isEditMode = false;
     }
 }

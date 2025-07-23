@@ -14,20 +14,15 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.18" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
         <PackageReference Include="Moq" Version="4.20.72" />
-        <PackageReference Include="NUnit" Version="3.14.0"/>
-        <PackageReference Include="NUnit.Analyzers" Version="3.9.0"/>
-        <PackageReference Include="NUnit3TestAdapter" Version="4.5.0"/>
         <PackageReference Include="Testcontainers" Version="4.6.0" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
         <PackageReference Include="Testcontainers.MySql" Version="4.6.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="NUnit.Framework"/>
+        <PackageReference Include="xunit" Version="2.9.3" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\BlazorApp1.Data\BlazorApp1.Data.csproj" />
+      <ProjectReference Include="..\BlazorApp1.Endpoint\BlazorApp1.Endpoint.csproj" />
       <ProjectReference Include="..\BlazorApp1\BlazorApp1.csproj" />
     </ItemGroup>
 

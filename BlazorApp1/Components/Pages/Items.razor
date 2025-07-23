@@ -1,6 +1,4 @@
 @page "/items"
-@using System.Drawing.Printing
-@using BlazorApp1.Entities
 @using BlazorApp1.Entities.Dto
 @using BlazorApp1.Logic
 @using BlazorApp1.Components.Pages.Templates
@@ -86,29 +84,14 @@ else
 
     private async Task LoadItemsAsync()
     {
-        items = ItemLogic.GetAllItems().ToList();
-        StateHasChanged(); 
     }
 
     private async Task DeleteItem(int id)
     {
-        // Log to console when the button is clicked
-        Console.WriteLine($"Delete button clicked for user with Id: {id}");
-
-        var success = ItemLogic.DeleteItem(id);
-        if (success)
-        {
-            await LoadItemsAsync();
-            StateHasChanged(); // Refresh the UI to reflect changes
-        }
     }
     
     private async Task EditItem(int itemid)
     {
-        var curitem = items.Where(x=> x.Id == itemid).ToList().FirstOrDefault();
-        // Pre-fill the form with the user's current data
-        editItem = new ItemUpdateDto { Id = curitem.Id, Name = curitem.Name };
-        isEditMode = true;
     }
 
 
@@ -117,12 +100,11 @@ else
         // Log to console when the form is submitted
         Console.WriteLine($"Creating user: {newItem.Name}");
 
-        var success = ItemLogic.CreateItem(newItem);
-        if (success)
-        {
+        var success = ItemLogic.CreateItemAsync(newItem);
+
             await LoadItemsAsync();
             newItem = new ItemCreateDto(); // Reset the form
-        }
+        
     }
 
     private async Task HandleEditUser()
@@ -130,8 +112,8 @@ else
         // Log to console when the form is submitted
         Console.WriteLine($"Editing user: {editItem.Name}");
 
-        var success = ItemLogic.UpdateItem(editItem);
-        if (success)
+        var success = ItemLogic.UpdateItemAsync(editItem);
+        if (success.Result== true)
         {
             await LoadItemsAsync();
             isEditMode = false; // Exit edit mode

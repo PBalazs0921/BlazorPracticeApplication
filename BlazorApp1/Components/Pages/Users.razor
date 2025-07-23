@@ -72,7 +72,7 @@ else
 
     private async Task LoadUsersAsync()
     {
-        users = UserLogic.GetAllUsers().ToList();
+
     }
 
     private async Task DeleteUser(int id)
@@ -80,7 +80,7 @@ else
         // Log to console when the button is clicked
         Console.WriteLine($"Delete button clicked for user with Id: {id}");
 
-        var success = UserLogic.DeleteUser(id);
+        var success = await UserLogic.DeleteUserAsync(id);
         if (success)
         {
             await LoadUsersAsync();
@@ -93,8 +93,8 @@ else
         // Log to console when the form is submitted
         Console.WriteLine($"Creating user: {newUser.Name}");
 
-        var success = UserLogic.CreateUser(newUser);
-        if (success)
+        var success = UserLogic.CreateUserAsync(newUser);
+        if (success.Result==true)
         {
             await LoadUsersAsync();
             newUser = new UserCreateDto(); // Reset the form
@@ -114,7 +114,7 @@ else
         // Log to console when the form is submitted
         Console.WriteLine($"Editing user: {editUser.Name}");
 
-        var success = UserLogic.UpdateUser(editUser);
+        var success = await UserLogic.UpdateUserAsync(editUser);
         if (success)
         {
             await LoadUsersAsync();

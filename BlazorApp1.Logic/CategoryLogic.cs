@@ -1,54 +1,50 @@
 using AutoMapper;
 using BlazorApp1.Data;
-using BlazorApp1.Entities;
 using BlazorApp1.Entities.Dto;
+using BlazorApp1.Entities.Entity;
+using BlazorApp1.Logic.Dto;
 
 namespace BlazorApp1.Logic;
 
-public class CategoryLogic
+public class CategoryLogic(Repository<Category> repository, DtoProvider dtoProvider) : ICategoryLogic
 {
-    private readonly Repository<Category> _repository;
-    public Mapper mapper;
+    private readonly Mapper _mapper = dtoProvider.mapper;
 
-    public CategoryLogic(Repository<Category> repository,DtoProvider dtoProvider)
+
+    public async Task<CategoryViewDto> CreateItemAsync(CategoryCreateDto dto)
     {
-        _repository = repository;
-        mapper = dtoProvider.mapper;
+        var category = _mapper.Map<Category>(dto);
+        await repository.CreateAsync(category);
+        return _mapper.Map<CategoryViewDto>(category);
     }
 
-    public bool CreateItem(CategoryCreateDto dto)
+    public async Task<IEnumerable<CategoryViewDto>> GetAllItemsAsync()
     {
-        var category = mapper.Map<Category>(dto);
-        _repository.Create(category);
-        return true;
-    }
-
-    public IEnumerable<CategoryViewDto> GetAllItems()
-    {
-        Console.WriteLine("GetAllItems called");
-        return _repository.GetAll().Select(x=> mapper.Map<CategoryViewDto>(x));
+        var allCategories = await repository.GetAllAsync();
+        return allCategories.Select(x => _mapper.Map<CategoryViewDto>(x));
     }
     
-    public bool UpdateItem(CategoryUpdateDto dto)
+    public async Task<bool> UpdateItemAsync(CategoryUpdateDto dto)
     {
-        var CategoryToUpdate = _repository.FindById(dto.Id);
-        if (CategoryToUpdate != null && CategoryToUpdate.Id == dto.Id)
+        var categoryToUpdate = await repository.FindByIdAsync(dto.Id);
+        if (categoryToUpdate != null && categoryToUpdate.Id == dto.Id)
         {
-            mapper.Map(dto, CategoryToUpdate);
-            _repository.Update(CategoryToUpdate);
+            _mapper.Map(dto, categoryToUpdate);
+            await repository.UpdateAsync(categoryToUpdate);
             return true;
         }
 
         return false;
     }
-
-    public bool DeleteCategory(int id)
+    
+    public async Task<bool> DeleteCategoryAsync(int id)
     {
         Console.WriteLine("DeleteItem pressed: " + id);
-        var item = _repository.FindById(id);
+    
+        var item = await repository.FindByIdAsync(id);
         if (item == null) return false;
 
-        _repository.Delete(item);
+        await repository.DeleteAsync(item);
         return true;
     }
 }
