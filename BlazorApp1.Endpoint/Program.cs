@@ -1,6 +1,7 @@
 using System.Text;
 using BlazorApp1.Data;
 using BlazorApp1.Data.Helper;
+using BlazorApp1.Endpoint;
 using BlazorApp1.Logic;
 using BlazorApp1.Logic.Dto;
 using BlazorApp1.Logic.Interfaces;
@@ -109,9 +110,15 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    // Create the database schema automatically only in dev
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.EnsureCreated();
+    SeedData.Initialize(db);
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 
 app.UseHttpsRedirection();
 
