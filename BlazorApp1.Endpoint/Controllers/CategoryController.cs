@@ -1,6 +1,6 @@
+using BlazorApp1.Data.Helper;
 using BlazorApp1.Entities.Dto;
-using BlazorApp1.Entities.Helper;
-using BlazorApp1.Logic;
+using BlazorApp1.Logic.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,12 +36,17 @@ public class CategoryController(UserManager<AppUser> userManager, ICategoryLogic
     [HttpPost("Create")]
     public async Task<IActionResult> Create([FromBody] CategoryCreateDto dto)
     {
-        var result = await categoryLogic.CreateItemAsync(dto);
-
-        if (result.Id!= null)
-            return Ok();
-        else
+        try
+        {
+            var result = await categoryLogic.CreateItemAsync(dto);
+            if (result?.Id != null)
+                return Ok(result);
             return BadRequest("Failed to create category.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal Server Error: {ex.Message}");
+        }
     }
 
     

@@ -1,6 +1,6 @@
 namespace BlazorApp1.Entities.Dto;
 
-public class UserCUDDto
+public class UserCudDto
 {
     public required string Email { get; set; } = "";
 

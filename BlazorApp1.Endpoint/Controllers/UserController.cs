@@ -2,16 +2,14 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using BlazorApp1.Data.Helper;
+using BlazorApp1.Entities.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using BlazorApp1;
-using BlazorApp1.Entities.Dto;
-using BlazorApp1.Entities.Helper;
 
-
-namespace BlazorApp1.Controllers;
+namespace BlazorApp1.Endpoint.Controllers;
 
 [ApiController]
 [Route("[controller]")]
@@ -19,19 +17,19 @@ public class UserController : ControllerBase
 {
     
     
-    private UserManager<AppUser> userManager;
-    private RoleManager<IdentityRole> roleManager;
-    private IConfiguration configuration;
+    private UserManager<AppUser> _userManager;
+    private RoleManager<IdentityRole> _roleManager;
+    private IConfiguration _configuration;
     
     public UserController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
     {
-        this.configuration = configuration;
-        this.userManager = userManager;
-        this.roleManager = roleManager;
+        this._configuration = configuration;
+        this._userManager = userManager;
+        this._roleManager = roleManager;
     }
     
     [HttpPost("register")]
-    public async Task Register(UserCUDDto dto)
+    public async Task Register(UserCudDto dto)
     {
         var user = new AppUser
         {
@@ -42,12 +40,12 @@ public class UserController : ControllerBase
             GivenName = "",
             RefreshToken = ""
         };
-        var result = await userManager.CreateAsync(user, dto.Password);
+        var result = await _userManager.CreateAsync(user, dto.Password);
         
-            if (userManager.Users.Count() == 1)
+            if (_userManager.Users.Count() == 1)
         {
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
-            await userManager.AddToRoleAsync(user, "Admin");
+            await _roleManager.CreateAsync(new IdentityRole("Admin"));
+            await _userManager.AddToRoleAsync(user, "Admin");
         }
 
         if (!result.Succeeded)
@@ -60,13 +58,13 @@ public class UserController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(UserLoginDto dto)
     {
-        var user = await userManager.FindByEmailAsync(dto.Email);
+        var user = await _userManager.FindByEmailAsync(dto.Email);
         if (user == null)
         {
             throw new Exception("User not found");
         }
 
-        var result = await userManager.CheckPasswordAsync(user, dto.Password);
+        var result = await _userManager.CheckPasswordAsync(user, dto.Password);
         if (result)
         {
 
@@ -74,10 +72,10 @@ public class UserController : ControllerBase
             var claim = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.UserName!),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
 
-            foreach (var role in await userManager.GetRolesAsync(user))
+            foreach (var role in await _userManager.GetRolesAsync(user))
             {
                 claim.Add(new Claim(ClaimTypes.Role, role));
             }
@@ -109,7 +107,7 @@ public class UserController : ControllerBase
             rng.GetBytes(randomNumber);
             string result = Convert.ToBase64String(randomNumber);
             user.RefreshToken = result;
-            await userManager.UpdateAsync(user);
+            await _userManager.UpdateAsync(user);
             return result;
         }
     }
@@ -118,14 +116,14 @@ public class UserController : ControllerBase
     [Authorize]
     public IEnumerable<IdentityUser> Get()
     {
-        return userManager.Users.ToList();
+        return _userManager.Users.ToList();
     }
     
     
     private JwtSecurityToken GenerateAccessToken(IEnumerable<Claim>? claims, int expiryInMinutes)
     {
         var signinKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(configuration["jwt:key"] ?? throw new Exception("jwt:key not found in appsettings.json")));
+            Encoding.UTF8.GetBytes(_configuration["jwt:key"] ?? throw new Exception("jwt:key not found in appsettings.json")));
 
         return new JwtSecurityToken(
             issuer: "movieclub.com",

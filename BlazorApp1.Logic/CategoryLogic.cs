@@ -3,15 +3,16 @@ using BlazorApp1.Data;
 using BlazorApp1.Entities.Dto;
 using BlazorApp1.Entities.Entity;
 using BlazorApp1.Logic.Dto;
+using BlazorApp1.Logic.Interfaces;
 
 namespace BlazorApp1.Logic;
 
 public class CategoryLogic(Repository<Category> repository, DtoProvider dtoProvider) : ICategoryLogic
 {
-    private readonly Mapper _mapper = dtoProvider.mapper;
+    private readonly Mapper _mapper = dtoProvider.Mapper;
 
 
-    public async Task<CategoryViewDto> CreateItemAsync(CategoryCreateDto dto)
+    public async Task<CategoryViewDto?> CreateItemAsync(CategoryCreateDto dto)
     {
         var category = _mapper.Map<Category>(dto);
         await repository.CreateAsync(category);

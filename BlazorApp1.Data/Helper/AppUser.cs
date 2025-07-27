@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
-namespace BlazorApp1.Entities.Helper;
+namespace BlazorApp1.Data.Helper;
 public class AppUser : IdentityUser
 {
     [StringLength(200)]

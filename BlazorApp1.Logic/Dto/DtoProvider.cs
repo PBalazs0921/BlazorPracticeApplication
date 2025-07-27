@@ -1,5 +1,4 @@
 using AutoMapper;
-using BlazorApp1.Entities;
 using BlazorApp1.Entities.Dto;
 using BlazorApp1.Entities.Entity;
 
@@ -7,7 +6,7 @@ namespace BlazorApp1.Logic.Dto;
 
 public class DtoProvider
 {
-    public Mapper mapper {
+    public Mapper Mapper {
         get;
     }
     
@@ -33,6 +32,6 @@ public class DtoProvider
 
 
         });
-        mapper = new Mapper(config);
+        Mapper = new Mapper(config);
     }
 }

@@ -8,7 +8,7 @@ namespace BlazorApp1.Logic;
 
 public class BookingLogic(Repository<Booking> repository, DtoProvider dtoProvider)
 {
-    private readonly Mapper _mapper = dtoProvider.mapper;
+    private readonly Mapper _mapper = dtoProvider.Mapper;
 
     public async Task<IEnumerable<BookingViewDto>> GetAllBookingsAsync()
     {
@@ -38,10 +38,11 @@ public class BookingLogic(Repository<Booking> repository, DtoProvider dtoProvide
             //if there are bookings, we have checked.
             //If the latest toDate is equals, or 1 day before the current. its valid
             
-            var latestBooking = Bookings.OrderByDescending(x => x.ToDate).FirstOrDefault();
-            var earliestBooking = Bookings.OrderByDescending(x => x.ToDate).LastOrDefault();
+            var latestBooking = Bookings.OrderByDescending(x => x.ToDate).First();
+            var earliestBooking = Bookings.OrderByDescending(x => x.ToDate).Last();
             
             //We assume that the item can be lent out on the same day
+
             
             // Check if the latest booking's ToDate is equal to or 1 day before the currentBooking's from date
             Console.WriteLine("LatestTO currentFROM" + latestBooking.ToDate.Date + " " + booking.FromDate.Date);
