@@ -1,7 +1,7 @@
+using BlazorApp1.Data.Helper;
 using BlazorApp1.Endpoint.Controllers;
 using BlazorApp1.Entities.Dto;
-using BlazorApp1.Entities.Helper;
-using BlazorApp1.Logic;
+using BlazorApp1.Logic.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -74,13 +74,15 @@ public class CategoryControllerTests
         Assert.Equal("Category not found or update failed.", notFound.Value);
     }
 
+    
     [Fact]
     public async Task Create_ShouldReturnBadRequest_WhenCreationFails()
     {
         // Arrange
         var createDto = new CategoryCreateDto { Name = "New" };
-        var failResult = new CategoryViewDto { Id = 1, Name ="TEST" }; // ID not null = fail according to your logic
-        _mockCategoryLogic.Setup(x => x.CreateItemAsync(createDto)).ReturnsAsync(failResult);
+
+        // Mock CreateItemAsync to return null (meaning failure)
+        _mockCategoryLogic.Setup(x => x.CreateItemAsync(createDto)).ReturnsAsync((CategoryViewDto?)null);
 
         // Act
         var result = await _controller.Create(createDto);
@@ -89,6 +91,7 @@ public class CategoryControllerTests
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal("Failed to create category.", badRequest.Value);
     }
+
 
     [Fact]
     public async Task Create_ShouldReturnOk_WhenCreationSucceeds()
@@ -103,7 +106,7 @@ public class CategoryControllerTests
         var result = await _controller.Create(createDto);
 
         // Assert
-        Assert.IsType<OkResult>(result);
+        Assert.IsType<OkObjectResult>(result);
     }
 
 

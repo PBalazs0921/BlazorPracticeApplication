@@ -3,12 +3,13 @@ using BlazorApp1.Data;
 using BlazorApp1.Entities.Dto;
 using BlazorApp1.Entities.Entity;
 using BlazorApp1.Logic.Dto;
+using BlazorApp1.Logic.Interfaces;
 
 namespace BlazorApp1.Logic;
 
-public class ItemLogic(Repository<Item> repository, DtoProvider dtoProvider)
+public class ItemLogic(Repository<Item> repository, DtoProvider dtoProvider):IItemLogic
 {
-    private readonly Mapper _mapper = dtoProvider.mapper;
+    private readonly Mapper _mapper = dtoProvider.Mapper;
 
     public async Task<int?> CreateItemAsync(ItemCreateDto dto)
     {

@@ -13,7 +13,7 @@ public class Item:IIdEntity
     public required string Name { get; set; }
     [Required]
     public int CategoryId { get; set; }
-    public required Category Category { get; set; }
+    public Category Category { get; set; }
     [Required]
     public int Price { get; set; }
 }

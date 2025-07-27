@@ -5,43 +5,43 @@ namespace BlazorApp1.Data;
 
 public class Repository<T> where T : class, IIdEntity
 {
-    private readonly ApplicationDbContext ctx;
+    private readonly ApplicationDbContext _ctx;
 
     public Repository(ApplicationDbContext ctx)
     {
-        this.ctx = ctx;
+        this._ctx = ctx;
     }
 
     public async Task CreateAsync(T entity)
     {
-        ctx.Set<T>().Add(entity);
-        await ctx.SaveChangesAsync();
+        _ctx.Set<T>().Add(entity);
+        await _ctx.SaveChangesAsync();
     }
 
     public async Task CreateManyAsync(IEnumerable<T> entities)
     {
-        ctx.Set<T>().AddRange(entities);
-        await ctx.SaveChangesAsync();
+        _ctx.Set<T>().AddRange(entities);
+        await _ctx.SaveChangesAsync();
     }
     public IQueryable<T> GetAll()
     {
-        return ctx.Set<T>();
+        return _ctx.Set<T>();
     }
 
     public async Task<T?> FindByIdAsync(int id)
     {
-        return await ctx.Set<T>().FirstOrDefaultAsync(t => t.Id == id);
+        return await _ctx.Set<T>().FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public async Task<List<T>> GetAllAsync()
     {
-        return await ctx.Set<T>().ToListAsync();
+        return await _ctx.Set<T>().ToListAsync();
     }
 
     public async Task DeleteAsync(T entity)
     {
-        ctx.Set<T>().Remove(entity);
-        await ctx.SaveChangesAsync();
+        _ctx.Set<T>().Remove(entity);
+        await _ctx.SaveChangesAsync();
     }
 
     public async Task DeleteByIdAsync(int id)
@@ -49,8 +49,8 @@ public class Repository<T> where T : class, IIdEntity
         var entity = await FindByIdAsync(id);
         if (entity != null)
         {
-            ctx.Set<T>().Remove(entity);
-            await ctx.SaveChangesAsync();
+            _ctx.Set<T>().Remove(entity);
+            await _ctx.SaveChangesAsync();
         }
     }
 
@@ -63,8 +63,8 @@ public class Repository<T> where T : class, IIdEntity
             {
                 prop.SetValue(old, prop.GetValue(entity));
             }
-            ctx.Set<T>().Update(old);
-            await ctx.SaveChangesAsync();
+            _ctx.Set<T>().Update(old);
+            await _ctx.SaveChangesAsync();
         }
     }
 }

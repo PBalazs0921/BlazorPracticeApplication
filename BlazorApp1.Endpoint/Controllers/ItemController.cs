@@ -1,6 +1,6 @@
+using BlazorApp1.Data.Helper;
 using BlazorApp1.Entities.Dto;
-using BlazorApp1.Entities.Helper;
-using BlazorApp1.Logic;
+using BlazorApp1.Logic.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,9 +8,9 @@ namespace BlazorApp1.Endpoint.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ItemController(UserManager<AppUser> userManager, ItemLogic itemLogic) : ControllerBase
+public class ItemController(UserManager<AppUser> userManager, IItemLogic itemLogic) : ControllerBase
 {
-    private readonly UserManager<AppUser> userManager = userManager;
+    private readonly UserManager<AppUser> _userManager = userManager;
 
     [HttpGet("Get")]
     public async Task<IEnumerable<ItemViewDto>> Get()

@@ -8,7 +8,7 @@ namespace BlazorApp1.Logic;
 
 public class UserLogic(Repository<User> repository, DtoProvider dtoProvider)
 {
-    private readonly Mapper _mapper = dtoProvider.mapper;
+    private readonly Mapper _mapper = dtoProvider.Mapper;
 
 
     public async Task<bool> CreateUserAsync(UserCreateDto dto)

@@ -1,5 +1,5 @@
+using BlazorApp1.Data.Helper;
 using BlazorApp1.Entities.Dto;
-using BlazorApp1.Entities.Helper;
 using BlazorApp1.Logic;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

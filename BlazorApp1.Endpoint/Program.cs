@@ -1,8 +1,10 @@
 using System.Text;
 using BlazorApp1.Data;
-using BlazorApp1.Entities.Helper;
+using BlazorApp1.Data.Helper;
+using BlazorApp1.Endpoint;
 using BlazorApp1.Logic;
 using BlazorApp1.Logic.Dto;
+using BlazorApp1.Logic.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -70,18 +72,32 @@ builder.Services.AddAuthentication(option =>
 
 
 //DB context
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrEmpty(connectionString))
-    throw new InvalidOperationException("Connection string 'DefaultConnection' is missing.");
-
+// DB context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySQL(connectionString)
-);
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        // Use InMemory database only in development
+        options.UseInMemoryDatabase("DevInMemoryDb");
+    }
+    else
+    {
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrEmpty(connectionString))
+            throw new InvalidOperationException("Connection string 'DefaultConnection' is missing.");
+
+        options.UseMySQL(connectionString);
+    }
+});
+
+
 builder.Services.AddTransient(typeof(Repository<>));
 
 builder.Services.AddTransient<DtoProvider>();
 
-builder.Services.AddTransient<CategoryLogic>();
+
+builder.Services.AddTransient<ICategoryLogic, CategoryLogic>();
+builder.Services.AddTransient<IItemLogic, ItemLogic>();
 
 builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddRoles<IdentityRole>()
@@ -94,9 +110,15 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    // Create the database schema automatically only in dev
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.EnsureCreated();
+    SeedData.Initialize(db);
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 
 app.UseHttpsRedirection();
 
@@ -107,3 +129,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

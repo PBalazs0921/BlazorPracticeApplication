@@ -1,5 +1,5 @@
+using BlazorApp1.Data.Helper;
 using BlazorApp1.Entities.Entity;
-using BlazorApp1.Entities.Helper;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +16,7 @@ public class ApplicationDbContext : IdentityDbContext
         : base(options)
     {
         //Database.EnsureDeleted();
-        Database.EnsureCreated();
+        //Database.EnsureCreated();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

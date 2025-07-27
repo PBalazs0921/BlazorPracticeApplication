@@ -1,6 +1,6 @@
 using BlazorApp1.Entities.Dto;
 
-namespace BlazorApp1.Logic;
+namespace BlazorApp1.Logic.Interfaces;
 
 public interface ICategoryLogic
 {
