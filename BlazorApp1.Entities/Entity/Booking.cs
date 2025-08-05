@@ -17,5 +17,5 @@ public class Booking : IIdEntity
     public int Price { get; set; }
     public string? Comment { get; set; }
     [Required]
-    public required User User { get; set; }
+    public required AppUser User { get; set; }
 }
