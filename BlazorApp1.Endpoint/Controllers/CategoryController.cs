@@ -1,6 +1,7 @@
 using BlazorApp1.Data.Helper;
 using BlazorApp1.Entities.Dto;
 using BlazorApp1.Logic.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,19 +35,30 @@ public class CategoryController(UserManager<AppUser> userManager, ICategoryLogic
     }
     
     [HttpPost("Create")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CategoryCreateDto dto)
     {
-        try
+        var user = await _userManager.GetUserAsync(User);
+        if (user != null)
         {
-            var result = await categoryLogic.CreateItemAsync(dto);
-            if (result?.Id != null)
-                return Ok(result);
-            return BadRequest("Failed to create category.");
-        }
-        catch (Exception ex)
+            try
+            {
+                var result = await categoryLogic.CreateItemAsync(dto);
+                if (result?.Id != null)
+                    return Ok(result);
+                return BadRequest("Failed to create category.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
+        }        else
         {
-            return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            // Handle the case when the user is not found
+            // For example, return an error response or throw an exception
+            throw new Exception("User not found");
         }
+
     }
 
     

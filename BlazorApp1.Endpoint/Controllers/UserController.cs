@@ -113,8 +113,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
-    public IEnumerable<IdentityUser> Get()
+    public IEnumerable<IdentityUser> GetAll()
     {
         return _userManager.Users.ToList();
     }

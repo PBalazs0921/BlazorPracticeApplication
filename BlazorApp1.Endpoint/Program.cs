@@ -47,28 +47,7 @@ builder.Services.AddSwaggerGen(option =>
 });
 
 
-//AUTH
-builder.Services.AddAuthentication(option =>
-    {
-        option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        option.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.SaveToken = true;
-        options.RequireHttpsMetadata = true;
-        options.TokenValidationParameters = new TokenValidationParameters()
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidAudience = "movieclub.com",
-            ValidIssuer = "movieclub.com",
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["jwt:key"] 
-                                       ?? throw new Exception("jwt:key not found in appsettings.json")))
-        };
-    });
+
 
 
 //DB context
@@ -79,6 +58,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
         // Use InMemory database only in development
         options.UseInMemoryDatabase("DevInMemoryDb");
+        options.EnableSensitiveDataLogging();
     }
     else
     {
@@ -104,6 +84,28 @@ builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+//AUTH
+builder.Services.AddAuthentication(option =>
+    {
+        option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        option.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.SaveToken = true;
+        options.RequireHttpsMetadata = true;
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidAudience = "movieclub.com",
+            ValidIssuer = "movieclub.com",
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["jwt:key"] 
+                                       ?? throw new Exception("jwt:key not found in appsettings.json")))
+        };
+    });
 
 var app = builder.Build();
 
@@ -115,6 +117,7 @@ if (app.Environment.IsDevelopment())
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.EnsureCreated();
     SeedData.Initialize(db);
+    
     app.UseSwagger();
     app.UseSwaggerUI();
 }
