@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using BlazorApp1.Data.Helper;
 using BlazorApp1.Endpoint.Controllers;
 using BlazorApp1.Entities.Dto;
 using BlazorApp1.Logic.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -14,6 +16,7 @@ public class CategoryControllerTests
     private readonly CategoryController _controller;
     private readonly Mock<UserManager<AppUser>> _mockUserManager;
     private readonly Mock<ICategoryLogic> _mockCategoryLogic;
+    private readonly ClaimsPrincipal _adminUser;
 
     public CategoryControllerTests()
     {
@@ -23,7 +26,30 @@ public class CategoryControllerTests
         );
 
         _mockCategoryLogic = new Mock<ICategoryLogic>();
-        _controller = new CategoryController(_mockUserManager.Object, _mockCategoryLogic.Object);
+        _adminUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "admin-id"),
+            new Claim(ClaimTypes.Name, "admin"),
+            new Claim(ClaimTypes.Role, "Admin")
+        }, "mock"));
+
+        // Create controller and assign user
+        _controller = new CategoryController(_mockUserManager.Object, _mockCategoryLogic.Object)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = _adminUser }
+            }
+        };
+        _mockUserManager.Setup(x => x.GetUserAsync(_adminUser))
+            .ReturnsAsync(new AppUser
+            {
+                Id = "admin-id",
+                UserName = "admin",
+                FamilyName = null,
+                GivenName = null,
+                RefreshToken = null
+            });
     }
 
     [Fact]

@@ -1,5 +1,6 @@
 using BlazorApp1.Data.Helper;
 using BlazorApp1.Entities.Entity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,7 +24,7 @@ public class ApplicationDbContext : IdentityDbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Booking>()
-            .HasOne(b => b.User)
+            .HasOne<IdentityUser>()
             .WithMany()          
             .HasForeignKey(b => b.UserId) 
             .OnDelete(DeleteBehavior.Cascade);
