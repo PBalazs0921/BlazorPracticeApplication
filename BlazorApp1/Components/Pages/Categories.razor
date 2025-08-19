@@ -74,7 +74,7 @@ else
 
     private async Task LoadItemsAsync()
     {
-        _categories = await _http!.GetFromJsonAsync<List<CategoryViewDto>>("Category");
+        _categories = await _http!.GetFromJsonAsync<List<CategoryViewDto>>("Category/GetAll");
         if (_categories == null)
         {
             throw new Exception("Failed to load categories from API.");

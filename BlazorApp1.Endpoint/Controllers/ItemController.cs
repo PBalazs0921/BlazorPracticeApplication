@@ -1,6 +1,7 @@
 using BlazorApp1.Data.Helper;
 using BlazorApp1.Entities.Dto;
 using BlazorApp1.Logic.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,15 +32,27 @@ public class ItemController(UserManager<AppUser> userManager, IItemLogic itemLog
     }
 
     [HttpPost("Create")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] ItemCreateDto dto)
     {
-        var result = await itemLogic.CreateItemAsync(dto);
+        var user = await _userManager.GetUserAsync(User);
+        if (user != null)
+        {
+            var result = await itemLogic.CreateItemAsync(dto);
 
-        if (result!=null)
-            return Ok();
-        else
-            return BadRequest("Failed to create item.");
+            if (result!=null)
+                return Ok();
+            else
+                return BadRequest("Failed to create item.");
+        }else
+        {
+            // Handle the case when the user is not found
+            // For example, return an error response or throw an exception
+            throw new Exception("User not found");
+        }
+
     }
+    
 
     [HttpDelete("Delete")]
     public async Task<IActionResult> Delete([FromQuery] int id)
