@@ -2,6 +2,7 @@
 @using BlazorApp1.Entities.Dto
 @using BlazorApp1.Components.Pages.Templates
 @rendermode InteractiveServer
+@inject HttpClient MyApiClient
 
 <h3>Categories List</h3>
 
@@ -54,10 +55,7 @@ else
 
 
 }
-
-@inject IHttpClientFactory HttpClientFactory
 @code {
-    private HttpClient? _http;
     
 
     
@@ -68,13 +66,12 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _http = HttpClientFactory.CreateClient("MyAPI");
         await LoadItemsAsync();
     }
 
     private async Task LoadItemsAsync()
     {
-        _categories = await _http!.GetFromJsonAsync<List<CategoryViewDto>>("Category/GetAll");
+        _categories = await MyApiClient!.GetFromJsonAsync<List<CategoryViewDto>>("Category/GetAll");
         if (_categories == null)
         {
             throw new Exception("Failed to load categories from API.");
@@ -86,7 +83,7 @@ else
     {
         Console.WriteLine($"Delete button clicked for category with Id: {id}");
 
-        var response = await _http!.DeleteAsync($"Category/Delete?id={id}");
+        var response = await MyApiClient!.DeleteAsync($"Category/Delete?id={id}");
         if (response.IsSuccessStatusCode)
         {
             await LoadItemsAsync();
@@ -98,7 +95,7 @@ else
     {
         Console.WriteLine($"Creating category: {_newCategory.Name}");
 
-        var response = await _http!.PostAsJsonAsync("Category/Create", _newCategory);
+        var response = await MyApiClient!.PostAsJsonAsync("Category/Create", _newCategory);
         if (response.IsSuccessStatusCode)
         {
             await LoadItemsAsync();
@@ -130,7 +127,7 @@ else
         if(_editCategory==null) throw new Exception("Edit category is null");
         Console.WriteLine($"Editing category: {_editCategory.Name}");
 
-        var response = await _http!.PutAsJsonAsync("Category/Edit", _editCategory);
+        var response = await MyApiClient!.PutAsJsonAsync("Category/Edit", _editCategory);
         if (response.IsSuccessStatusCode)
         {
             await LoadItemsAsync();

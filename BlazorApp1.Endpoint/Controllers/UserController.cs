@@ -50,13 +50,13 @@ public class UserController : ControllerBase
 
         if (!result.Succeeded)
         {
-            throw new Exception(result.Errors.ToString());
+            throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
         }
         
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(UserLoginDto dto)
+    public async Task<IActionResult> Login([FromBody] UserLoginDto dto)
     {
         var user = await _userManager.FindByEmailAsync(dto.Email);
         if (user == null)
