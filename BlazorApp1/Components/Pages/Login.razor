@@ -1,55 +1,57 @@
 @page "/login"
 @using BlazorApp1.Entities.Dto
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
-@inject HttpClient Http
-@inject ProtectedLocalStorage localStorage
+@using BlazorApp1.Services
 @rendermode InteractiveServer
+@inject IAuthenticationService AuthenticationService;
 
-<EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="LoginForm">
-    <InputText @bind-Value="loginModel.Email" class="form-control" placeholder="Email" />
-    <InputText @bind-Value="loginModel.Password" type="password" placeholder="Password" />
-    <button type="submit">Login</button>
-</EditForm>
 
-@if (!string.IsNullOrEmpty(token))
+<fieldset disabled="@(expiration is not null)">
+    <EditForm Model="@model" OnValidSubmit="SubmitAsync" FormName="LoginForm">
+        <div>
+            <label for="email">Username:</label>
+            <InputText @bind-Value="@model.Email" id="email" name="email" required />
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <InputText type="password" @bind-Value="@model.Password" id="password" name="password" required />
+        </div>
+        <div>
+            <button type="submit">Login</button>
+        </div>
+    </EditForm>
+</fieldset>
+
+@if(expiration is not null)
 {
-    <p>Token: @token</p>
+    <p>You are logged in until @expiration?.ToLongTimeString()</p>
 }
 
-@if (!string.IsNullOrEmpty(errorMessage))
+@if (errorMessage is not null)
 {
-    <p style="color:red">@errorMessage</p>
+    <p class="error">@errorMessage</p>
 }
 
 @code {
-    private UserLoginDto loginModel = new UserLoginDto();
-    private string errorMessage;
-    private string token; // store token here to display
-    
-    private async Task HandleLogin()
+    private UserLoginDto model = new UserLoginDto();
+    private DateTime? expiration;
+    private string? errorMessage;
+
+    private async Task SubmitAsync()
     {
-        errorMessage = string.Empty;
-        token = string.Empty;
+        // Print login details to console
+        Console.WriteLine($"[Login Attempt] Email: {model.Email}, Password: {model.Password}");
 
-        var response = await Http.PostAsJsonAsync("User/Login", loginModel);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var result = await response.Content.ReadFromJsonAsync<LoginResultDto>();
-            token = result.AccessToken;
+            expiration = await AuthenticationService.LoginAsync(model);
 
-            // Store token in protected local storage
-            await localStorage.SetAsync("authToken", token);
-            await localStorage.SetAsync("refreshToken", result.RefreshToken);
+            errorMessage = null;
         }
-        else
+        catch (Exception ex)
         {
-            var serverError = await response.Content.ReadAsStringAsync();
-            errorMessage = $" Email: {loginModel.Email}, Password: {loginModel.Password}  Login failed: {serverError}";
-        }
-    }
+            expiration = null;
 
-    public class TokenResponse
-    {
-        public string Token { get; set; }
+            errorMessage = ex.Message;
+        }
     }
 }
