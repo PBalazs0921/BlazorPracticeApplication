@@ -18,7 +18,8 @@ builder.Services.AddHttpClient("MyAPI", client =>
 });
 
 
-
+//You need to tell the DI system that HttpClient MyApiClient refers to your named client "MyAPI". Add this after registering the named client in Program.cs:
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("MyAPI"));
 
 var app = builder.Build();
 
