@@ -1,0 +1,80 @@
+@using System.Reflection
+@typeparam InputItem
+
+@if (InputItems == null)
+{
+    <p><em>No data available.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                @foreach (var prop in VisibleProperties)
+                {
+                    <th>@FormatHeader(prop.Name)</th>
+                }
+                @if (EnableActions)
+                {
+                    <th>Actions</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in InputItems)
+            {
+                <tr>
+                    @foreach (var prop in VisibleProperties)
+                    {
+                        var value = prop.GetValue(item);
+                        <td>@(value is not null ? value.ToString() : "")</td>
+                    }
+                    @if (EnableActions)
+                    {
+                        <td>
+                            @if (OnDelete.HasDelegate)
+                            {
+                                <button class="btn btn-danger btn-sm" 
+                                        @onclick="@(() => OnDelete.InvokeAsync(GetIdValue(item)))">
+                                    Delete
+                                </button>
+                            }
+                            @if (OnEdit.HasDelegate)
+                            {
+                                <button class="btn btn-warning btn-sm" 
+                                        @onclick="@(() => OnEdit.InvokeAsync(GetIdValue(item)))">
+                                    Edit
+                                </button>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public IEnumerable<InputItem> InputItems { get; set; }
+    [Parameter] public EventCallback<int> OnDelete { get; set; } 
+    [Parameter] public EventCallback<int> OnEdit { get; set; }   
+    [Parameter] public bool EnableActions { get; set; } = true;
+
+    private List<PropertyInfo> VisibleProperties =>
+        typeof(InputItem).GetProperties()
+            .Where(p => p.PropertyType.IsPrimitive || p.PropertyType == typeof(string) || p.PropertyType.IsValueType)
+            .ToList();
+
+    private string FormatHeader(string propName)
+    {
+        return string.Concat(propName.Select((c, i) =>
+            i > 0 && char.IsUpper(c) ? " " + c : c.ToString()));
+    }
+    
+    private int GetIdValue(InputItem item)
+    {
+        Console.WriteLine($"Getting ID from item: {item}");
+        var idProp = typeof(InputItem).GetProperty("Id");
+        return (int)idProp.GetValue(item);
+    }
+}
