@@ -1,3 +1,4 @@
+
 using BlazorApp1.Data;
 using BlazorApp1.Data.Helper;
 using BlazorApp1.Entities.Entity;
@@ -75,3 +76,4 @@ public static class SeedData
         }
     }
 }
+

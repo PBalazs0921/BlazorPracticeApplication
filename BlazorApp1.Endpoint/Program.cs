@@ -126,18 +126,18 @@ if (app.Environment.IsDevelopment())
 {
     // Create the database schema automatically only in dev
     using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.EnsureCreated();
-    
+    var services = scope.ServiceProvider;
+
     var db = services.GetRequiredService<ApplicationDbContext>();
     var userManager = services.GetRequiredService<UserManager<AppUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
+    db.Database.EnsureCreated();
     await SeedData.InitializeAsync(db, userManager, roleManager);
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 
 
 app.UseHttpsRedirection();

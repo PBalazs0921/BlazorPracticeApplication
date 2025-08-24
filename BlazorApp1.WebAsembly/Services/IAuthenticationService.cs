@@ -8,4 +8,5 @@ public interface IAuthenticationService
     ValueTask<string> GetJwtAsync();
     Task LogoutAsync();
     Task<DateTime> LoginAsync(UserLoginDto model);
+    Task<bool> RefreshAsync();
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using BlazorApp1.WebAsembly;
+using BlazorApp1.WebAsembly.Handlers;
 using BlazorApp1.WebAsembly.Services;
 using Blazored.SessionStorage;
 
@@ -16,7 +17,10 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddBlazoredSessionStorageAsSingleton();
 
 
+builder.Services.AddTransient<AuthenticationHandler>();
+
 builder.Services.AddHttpClient("ServerApi")
-    .ConfigureHttpClient(c => c.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? ""));
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? ""))
+    .AddHttpMessageHandler<AuthenticationHandler>();
 
 await builder.Build().RunAsync();

@@ -78,6 +78,10 @@ namespace BlazorApp1.WebAsembly.Services
             return content.AccessTokenExpiration;
         }
 
+        public Task<bool> RefreshAsync()
+        {
+            throw new NotImplementedException();
+        }
     }
     
 }
