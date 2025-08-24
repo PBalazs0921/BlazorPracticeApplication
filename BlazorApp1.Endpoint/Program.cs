@@ -107,8 +107,20 @@ builder.Services.AddAuthentication(option =>
         };
     });
 
-var app = builder.Build();
 
+//CORS for webassembly
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5000") // Blazor WASM URL
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+var app = builder.Build();
+app.UseCors();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -116,11 +128,16 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.EnsureCreated();
-    SeedData.Initialize(db);
     
+    var db = services.GetRequiredService<ApplicationDbContext>();
+    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    await SeedData.InitializeAsync(db, userManager, roleManager);
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 
 
 app.UseHttpsRedirection();
