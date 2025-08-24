@@ -58,7 +58,6 @@ public class CategoryController(UserManager<AppUser> userManager, ICategoryLogic
             // For example, return an error response or throw an exception
             throw new Exception("User not found");
         }
-
     }
 
     
