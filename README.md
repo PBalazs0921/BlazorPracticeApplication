@@ -1,4 +1,5 @@
 # Blazor Practice Application
+The point of this application to have my jurney of learning dotnet, blazor and other used technologies documented.
 
 ## Technologies Used
 - .NET 8  
