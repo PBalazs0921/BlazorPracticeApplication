@@ -1,1 +1,5 @@
-#Blazor Practice Application
+# Blazor Practice Application
+
+## Technologies used
+- .NET
+- Blazor
