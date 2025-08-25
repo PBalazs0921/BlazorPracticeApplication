@@ -14,7 +14,7 @@ public static class SeedData
         }
 
         // Seed Categories
-        var categories = new[]
+        var categories = new[]  
         {
             new Category { Name = "Electronics" },
             new Category { Name = "Books" },

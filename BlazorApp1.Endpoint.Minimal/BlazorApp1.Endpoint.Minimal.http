@@ -1,0 +1,6 @@
+@BlazorApp1.Endpoint.Minimal_HostAddress = http://localhost:5125
+
+GET {{BlazorApp1.Endpoint.Minimal_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
