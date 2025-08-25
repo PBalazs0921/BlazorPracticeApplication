@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApp1.Logic", "BlazorA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApp1.IntegrationTests", "BlazorApp1.IntegrationTests\BlazorApp1.IntegrationTests.csproj", "{7098AC85-D494-4D54-BCD4-ED8EAF87B690}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalAPI", "MinimalAPI\MinimalAPI.csproj", "{A0CB9B13-C6D4-404E-988F-14932DA1C364}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{7098AC85-D494-4D54-BCD4-ED8EAF87B690}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7098AC85-D494-4D54-BCD4-ED8EAF87B690}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7098AC85-D494-4D54-BCD4-ED8EAF87B690}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0CB9B13-C6D4-404E-988F-14932DA1C364}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0CB9B13-C6D4-404E-988F-14932DA1C364}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0CB9B13-C6D4-404E-988F-14932DA1C364}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0CB9B13-C6D4-404E-988F-14932DA1C364}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
