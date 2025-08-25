@@ -60,7 +60,8 @@ public static class SeedData
                 EmailConfirmed = true,
                 FamilyName = "System",
                 GivenName = "Administrator",
-                RefreshToken = ""
+                RefreshToken = "",
+                RefreshTokenExpiryTime =  new DateTime(2030, 8, 25, 14, 30, 0) // YYYY, MM, DD, HH, MM, SS
             };
 
             var result = await userManager.CreateAsync(adminUser, adminPassword);

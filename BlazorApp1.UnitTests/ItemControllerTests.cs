@@ -47,7 +47,8 @@ public class ItemControllerTests
                 UserName = "admin",
                 FamilyName = null,
                 GivenName = null,
-                RefreshToken = null
+                RefreshToken = null,
+                RefreshTokenExpiryTime = DateTime.Now
             });
     }
 

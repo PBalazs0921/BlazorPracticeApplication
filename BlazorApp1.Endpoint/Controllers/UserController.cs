@@ -38,7 +38,8 @@ public class UserController : ControllerBase
             EmailConfirmed = true,
             FamilyName = dto.FamilyName,
             GivenName = "",
-            RefreshToken = ""
+            RefreshToken = "",
+            RefreshTokenExpiryTime = DateTime.Now
         };
         var result = await _userManager.CreateAsync(user, dto.Password);
         
@@ -56,6 +57,8 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("login")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type=typeof(LoginResultDto))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] UserLoginDto dto)
     {
         var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -95,29 +98,42 @@ public class UserController : ControllerBase
         }
         else
         {
-            throw new Exception("Invalid password");
+            return Unauthorized();
         }
     }
     
-    private async Task<string> GenerateRefreshToken(AppUser user)
-    {
-        var randomNumber = new byte[32];
-        using (var rng = RandomNumberGenerator.Create())
-        {
-            rng.GetBytes(randomNumber);
-            string result = Convert.ToBase64String(randomNumber);
-            user.RefreshToken = result;
-            await _userManager.UpdateAsync(user);
-            return result;
-        }
-    }
-
     [HttpGet]
     public IEnumerable<IdentityUser> GetAll()
     {
         return _userManager.Users.ToList();
     }
-    
+
+    public async Task<IActionResult> Refresh([FromBody] UserRefreshModel model)
+    {
+        var principal = GetPrincipalFromExpiredToken(model.AccessToken);
+
+        if (principal?.Identity?.Name is null)
+            return Unauthorized();
+        var user = await _userManager.FindByNameAsync(principal.Identity.Name);
+
+        if (user is null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime < DateTime.UtcNow)
+            return Unauthorized();
+
+        int expiryInMinutes = 24 * 60;
+        var claim = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.UserName!),
+            new Claim(ClaimTypes.NameIdentifier, user.Id)
+        };
+        var token = GenerateAccessToken(claim,expiryInMinutes);
+
+        return Ok(new LoginResultDto
+        {
+            AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
+            AccessTokenExpiration = token.ValidTo,
+            RefreshToken = model.RefreshToken
+        });
+    }
     
     private JwtSecurityToken GenerateAccessToken(IEnumerable<Claim>? claims, int expiryInMinutes)
     {
@@ -132,4 +148,34 @@ public class UserController : ControllerBase
             signingCredentials: new SigningCredentials(signinKey, SecurityAlgorithms.HmacSha256)
         );
     }
+    
+    private async Task<string> GenerateRefreshToken(AppUser user)
+    {
+        var randomNumber = new byte[32];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomNumber);
+            string result = Convert.ToBase64String(randomNumber);
+            user.RefreshToken = result;
+            await _userManager.UpdateAsync(user);
+            return result;
+        }
+    }
+    
+    private ClaimsPrincipal? GetPrincipalFromExpiredToken (string token) 
+    {
+        var secret = _configuration["jwt:key"] ?? throw new InvalidOperationException("Secret not configured");
+
+        var validation = new TokenValidationParameters
+        {
+            ValidIssuer = _configuration["JWT:ValidIssuer"],
+            ValidAudience = _configuration["JWT:ValidAudience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+            ValidateLifetime = false
+        };
+
+        return new JwtSecurityTokenHandler().ValidateToken(token, validation, out _);
+    }
+
+
 }
