@@ -1,0 +1,88 @@
+@typeparam TEntity
+
+<div>
+    <h3>@Title</h3>
+
+    @if (Items == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+            <tr>
+                @foreach (var header in Headers)
+                {
+                    <th>@header</th>
+                }
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Items)
+            {
+                <tr>
+                    @RowTemplate(item)
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="@(() => OnDelete.InvokeAsync(item))">Delete</button>
+                        <button class="btn btn-warning btn-sm" @onclick="@(() => BeginEdit(item))">Edit</button>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+
+    <h4>@(IsEditMode ? "Edit" : "Create")</h4>
+
+    <EditForm Model="EditItem" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        @FormContent
+        <button type="submit" class="btn btn-primary mt-2">@SubmitLabel</button>
+        @if (IsEditMode)
+        {
+            <button type="button" class="btn btn-secondary mt-2" @onclick="CancelEdit">Cancel</button>
+        }
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public List<string> Headers { get; set; }
+    [Parameter] public List<TEntity> Items { get; set; }
+
+    [Parameter] public RenderFragment<TEntity> RowTemplate { get; set; }
+    [Parameter] public RenderFragment FormContent { get; set; }
+
+    [Parameter] public TEntity EditItem { get; set; }
+    [Parameter] public EventCallback<TEntity> OnCreate { get; set; }
+    [Parameter] public EventCallback<TEntity> OnUpdate { get; set; }
+    [Parameter] public EventCallback<TEntity> OnDelete { get; set; }
+
+    private bool IsEditMode = false;
+    private string SubmitLabel => IsEditMode ? "Save Changes" : "Create";
+
+    private async Task OnValidSubmit()
+    {
+        if (IsEditMode)
+            await OnUpdate.InvokeAsync(EditItem);
+        else
+            await OnCreate.InvokeAsync(EditItem);
+
+        CancelEdit();
+    }
+
+    private void BeginEdit(TEntity item)
+    {
+        IsEditMode = true;
+        EditItem = item;
+    }
+
+    private void CancelEdit()
+    {
+        IsEditMode = false;
+        EditItem = Activator.CreateInstance<TEntity>();
+    }
+}

@@ -1,0 +1,55 @@
+@page "/login"
+@using BlazorApp1.Entities.Dto
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject HttpClient Http
+@inject ProtectedLocalStorage localStorage
+@rendermode InteractiveServer
+
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="LoginForm">
+    <InputText @bind-Value="loginModel.Email" class="form-control" placeholder="Email" />
+    <InputText @bind-Value="loginModel.Password" type="password" placeholder="Password" />
+    <button type="submit">Login</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(token))
+{
+    <p>Token: @token</p>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color:red">@errorMessage</p>
+}
+
+@code {
+    private UserLoginDto loginModel = new UserLoginDto();
+    private string errorMessage;
+    private string token; // store token here to display
+    
+    private async Task HandleLogin()
+    {
+        errorMessage = string.Empty;
+        token = string.Empty;
+
+        var response = await Http.PostAsJsonAsync("User/Login", loginModel);
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<LoginResultDto>();
+            token = result.AccessToken;
+
+            // Store token in protected local storage
+            await localStorage.SetAsync("authToken", token);
+            await localStorage.SetAsync("refreshToken", result.RefreshToken);
+        }
+        else
+        {
+            var serverError = await response.Content.ReadAsStringAsync();
+            errorMessage = $" Email: {loginModel.Email}, Password: {loginModel.Password}  Login failed: {serverError}";
+        }
+    }
+
+    public class TokenResponse
+    {
+        public string Token { get; set; }
+    }
+}

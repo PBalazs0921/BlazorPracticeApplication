@@ -10,8 +10,6 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.18" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.18" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.18" />
-        <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.17" />
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
     </ItemGroup>
 
@@ -19,6 +17,7 @@
       <ProjectReference Include="..\BlazorApp1.Data\BlazorApp1.Data.csproj" />
       <ProjectReference Include="..\BlazorApp1.Entities\BlazorApp1.Entities.csproj" />
       <ProjectReference Include="..\BlazorApp1.Logic\BlazorApp1.Logic.csproj" />
+      <ProjectReference Include="..\BlazorApp1\BlazorApp1.csproj" />
     </ItemGroup>
 
 </Project>
