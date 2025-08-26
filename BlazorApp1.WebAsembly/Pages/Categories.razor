@@ -1,0 +1,48 @@
+@page "/Categories"
+@using BlazorApp1.Entities.Dto
+@using BlazorApp1.WebAsembly.Pages.Templates
+@inject HttpClient MyApiClient
+
+<h3>Categories List</h3>
+
+@if (_categories == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <TableTemplate 
+        InputItem="CategoryViewDto"
+        InputItems="_categories"
+                   OnDelete="@DeleteItem"
+                   OnEdit="@DeleteItem"
+                   EnableActions="true"/>
+        
+    <h3>Create New Category</h3>
+    <button @onclick="()=> _isAddMode=true">Add Category</button>
+    @if(_isAddMode)
+    {
+        <AddCategory Added="CategoryAdded"></AddCategory>    
+    }
+
+    
+    @if (_isEditMode)
+    {
+        <h3>Edit User</h3>
+        <EditForm Model="@_editCategory" OnValidSubmit="HandleEditItem">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="editName">Name</label>
+                <InputText id="editName" class="form-control" @bind-Value="_editCategory!.Name" />
+                <ValidationMessage For="@(() => _editCategory.Name)" />
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-2">Save Changes</button>
+            <button type="button" class="btn btn-secondary mt-2" @onclick="CancelEdit">Cancel</button>
+        </EditForm>
+    }
+
+
+}
