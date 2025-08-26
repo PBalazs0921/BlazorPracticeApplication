@@ -1,0 +1,215 @@
+@page "/bookings"
+@using System.Drawing.Printing
+@using BlazorApp1.Entities
+@using BlazorApp1.Entities.Dto
+@using BlazorApp1.Logic
+@using Microsoft.AspNetCore.Components.Forms
+@using BlazorApp1.Components.Pages.Templates
+@inject BookingLogic BookingLogic
+@rendermode InteractiveServer
+
+<h3>Bookings List</h3>
+
+@if (bookings == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <TableTemplate
+        InputItem="BookingViewDto"
+        InputItems="bookings"
+        OnDelete="@DeleteBooking"
+        OnEdit="@EditBooking"
+        EnableActions="true" />
+    
+    
+    <h3>Create New booking</h3>
+    <EditForm Model="@newBooking" OnValidSubmit="HandleCreateBooking">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+                        
+        <div class="form-group">
+            <label for="editName">UserId</label>
+            <InputNumber id="editName" class="form-control" @bind-Value="newBooking.UserId" />
+            <ValidationMessage For="@(() => newBooking.UserId)" />
+        </div>
+            
+                        
+        <div class="form-group">
+            <label for="editName">ItemId</label>
+            <InputNumber id="editName" class="form-control" @bind-Value="newBooking.ItemId" />
+            <ValidationMessage For="@(() => newBooking.ItemId)" />
+        </div>
+            
+                        
+        <div class="form-group">
+            <label for="editName">FromDate</label>
+            <InputDate id="editName" class="form-control" @bind-Value="newBooking.FromDate" />
+            <ValidationMessage For="@(() => newBooking.FromDate)" />
+        </div>
+            
+        <div class="form-group">
+            <label for="editName">ToDate</label>
+            <InputDate id="editName" class="form-control" @bind-Value="newBooking.ToDate" />
+            <ValidationMessage For="@(() => newBooking.ToDate)" />
+        </div>
+        <div class="form-group">
+            <label for="editName">Comment</label>
+            <InputText id="editName" class="form-control" @bind-Value="newBooking.Comment" />
+            <ValidationMessage For="@(() => newBooking.Comment)" />
+        </div>
+        
+        <button type="submit" class="btn btn-success mt-2">Create</button>
+    </EditForm>
+    
+    @if (isEditMode)
+    {
+
+        <h3>Edit Booking</h3>
+        <EditForm Model="@editBooking" OnValidSubmit="HandleEditBooking">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            
+                        
+            <div class="form-group">
+                <label for="editName">UserId</label>
+                <InputNumber id="editName" class="form-control" @bind-Value="editBooking.UserId" />
+                <ValidationMessage For="@(() => editBooking.UserId)" />
+            </div>
+            
+                        
+            <div class="form-group">
+                <label for="editName">ItemId</label>
+                <InputNumber id="editName" class="form-control" @bind-Value="editBooking.ItemId" />
+                <ValidationMessage For="@(() => editBooking.ItemId)" />
+            </div>
+            
+                        
+            <div class="form-group">
+                <label for="editName">FromDate</label>
+                <InputDate id="editName" class="form-control" @bind-Value="editBooking.FromDate" />
+                <ValidationMessage For="@(() => editBooking.FromDate)" />
+            </div>
+            
+            <div class="form-group">
+                <label for="editName">ToDate</label>
+                <InputDate id="editName" class="form-control" @bind-Value="editBooking.ToDate" />
+                <ValidationMessage For="@(() => editBooking.ToDate)" />
+            </div>
+            <div class="form-group">
+                <label for="editName">Comment</label>
+                <InputText id="editName" class="form-control" @bind-Value="editBooking.Comment" />
+                <ValidationMessage For="@(() => editBooking.Comment)" />
+            </div>
+
+
+            <button type="submit" class="btn btn-primary mt-2">Save Changes</button>
+            <button type="button" class="btn btn-secondary mt-2" @onclick="CancelEdit">Cancel</button>
+        </EditForm> 
+    }
+
+
+}
+
+
+@code {
+    private List<BookingViewDto> bookings;
+
+    private BookingCreateDto newBooking = new BookingCreateDto
+    {
+        FromDate = DateTime.Today,
+        ToDate = DateTime.Today
+    };
+    private bool isEditMode = false;
+    
+    private BookingUpdateDto editBooking = new BookingUpdateDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsersAsync();
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        var result = await BookingLogic.GetAllBookingsAsync();
+        bookings = result.ToList();
+    }
+
+
+    private async Task DeleteBooking(int id)
+    {
+        Console.WriteLine($"Delete button clicked for user with Id: {id}");
+
+        var success = BookingLogic.DeleteItemAsync(id);
+        if (success.Result==true)
+        {
+            await LoadUsersAsync();
+            StateHasChanged(); 
+        }
+    }
+
+    private async Task HandleCreateBooking()
+    {
+        try
+        {
+            Console.WriteLine($"Creating bookin");
+            var success = await BookingLogic.CreateBookingAsync(newBooking);
+
+
+            if (success)
+            {
+                await LoadUsersAsync();
+                newBooking = new BookingCreateDto(); // Reset the form
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating booking: {ex.Message}");
+        }
+        
+        newBooking = new BookingCreateDto
+        {
+            FromDate = DateTime.Today,
+            ToDate = DateTime.Today
+        };
+    }
+
+    private void EditBooking(int bookingId)
+    {
+        var bookingToEdit = bookings.FirstOrDefault(b => b.Id == bookingId);
+        if (bookingToEdit != null)
+        {
+            editBooking = new BookingUpdateDto
+            {
+                Id= bookingToEdit.Id,
+                UserId = bookingToEdit.UserId,
+                ItemId = bookingToEdit.ItemId,
+                FromDate = bookingToEdit.FromDate,
+                ToDate = bookingToEdit.ToDate,
+                Comment = bookingToEdit.Comment
+            };
+            isEditMode = true;
+        }
+    }
+
+    private async Task HandleEditBooking()
+    {
+        // Log to console when the form is submitted
+        Console.WriteLine($"Editing user: {editBooking.Comment}");
+
+        var success = BookingLogic.UpdateBookingAsync(editBooking);
+        if (success.Result)
+        {
+            await LoadUsersAsync();
+            isEditMode = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CancelEdit()
+    {
+        isEditMode = false;
+    }
+}
