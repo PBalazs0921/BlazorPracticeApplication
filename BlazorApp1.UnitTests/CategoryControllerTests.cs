@@ -14,19 +14,17 @@ namespace UnitTests;
 public class CategoryControllerTests
 {
     private readonly CategoryController _controller;
-    private readonly Mock<UserManager<AppUser>> _mockUserManager;
     private readonly Mock<ICategoryLogic> _mockCategoryLogic;
-    private readonly ClaimsPrincipal _adminUser;
 
     public CategoryControllerTests()
     {
         var store = new Mock<IUserStore<AppUser>>();
-        _mockUserManager = new Mock<UserManager<AppUser>>(
-            store.Object, null, null, null, null, null, null, null, null
+        var mockUserManager = new Mock<UserManager<AppUser>>(
+            store.Object, null!, null!, null!, null!, null!, null!, null!, null!
         );
 
         _mockCategoryLogic = new Mock<ICategoryLogic>();
-        _adminUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        var adminUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
             new Claim(ClaimTypes.NameIdentifier, "admin-id"),
             new Claim(ClaimTypes.Name, "admin"),
@@ -34,21 +32,21 @@ public class CategoryControllerTests
         }, "mock"));
 
         // Create controller and assign user
-        _controller = new CategoryController(_mockUserManager.Object, _mockCategoryLogic.Object)
+        _controller = new CategoryController(mockUserManager.Object, _mockCategoryLogic.Object)
         {
             ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext { User = _adminUser }
+                HttpContext = new DefaultHttpContext { User = adminUser }
             }
         };
-        _mockUserManager.Setup(x => x.GetUserAsync(_adminUser))
+        mockUserManager.Setup(x => x.GetUserAsync(adminUser))
             .ReturnsAsync(new AppUser
             {
                 Id = "admin-id",
                 UserName = "admin",
                 FamilyName = null,
                 GivenName = null,
-                RefreshToken = null,
+                RefreshToken = null!,
                 RefreshTokenExpiryTime = DateTime.Now
             });
     }

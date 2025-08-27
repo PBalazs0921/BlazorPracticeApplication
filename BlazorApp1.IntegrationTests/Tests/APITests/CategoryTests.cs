@@ -3,9 +3,10 @@ using System.Net.Http.Json;
 using BlazorApp1.Entities.Dto;
 using Xunit;
 
-namespace BlazorApp1.IntegrationTests.Tests;
+namespace BlazorApp1.IntegrationTests.Tests.APITests;
 
-public class CategoryControllerTests : IClassFixture<IntegrationTestWebAppFactory<Program>>
+[Collection("ApiTestCollection")]
+public class CategoryControllerTests 
 {
     private readonly HttpClient _client;
 
