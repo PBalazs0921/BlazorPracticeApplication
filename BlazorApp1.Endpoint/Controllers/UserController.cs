@@ -13,21 +13,12 @@ namespace BlazorApp1.Endpoint.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UserController : ControllerBase
+public class UserController(
+    UserManager<AppUser> userManager,
+    RoleManager<IdentityRole> roleManager,
+    IConfiguration configuration)
+    : ControllerBase
 {
-    
-    
-    private UserManager<AppUser> _userManager;
-    private RoleManager<IdentityRole> _roleManager;
-    private IConfiguration _configuration;
-    
-    public UserController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
-    {
-        this._configuration = configuration;
-        this._userManager = userManager;
-        this._roleManager = roleManager;
-    }
-    
     [HttpPost("register")]
     public async Task Register(UserCudDto dto)
     {
@@ -41,12 +32,12 @@ public class UserController : ControllerBase
             RefreshToken = "",
             RefreshTokenExpiryTime = DateTime.Now
         };
-        var result = await _userManager.CreateAsync(user, dto.Password);
+        var result = await userManager.CreateAsync(user, dto.Password);
         
-            if (_userManager.Users.Count() == 1)
+            if (userManager.Users.Count() == 1)
         {
-            await _roleManager.CreateAsync(new IdentityRole("Admin"));
-            await _userManager.AddToRoleAsync(user, "Admin");
+            await roleManager.CreateAsync(new IdentityRole("Admin"));
+            await userManager.AddToRoleAsync(user, "Admin");
         }
 
         if (!result.Succeeded)
@@ -61,13 +52,13 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] UserLoginDto dto)
     {
-        var user = await _userManager.FindByEmailAsync(dto.Email);
+        var user = await userManager.FindByEmailAsync(dto.Email);
         if (user == null)
         {
             throw new Exception("User not found");
         }
 
-        var result = await _userManager.CheckPasswordAsync(user, dto.Password);
+        var result = await userManager.CheckPasswordAsync(user, dto.Password);
         if (result)
         {
 
@@ -78,12 +69,12 @@ public class UserController : ControllerBase
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
 
-            foreach (var role in await _userManager.GetRolesAsync(user))
+            foreach (var role in await userManager.GetRolesAsync(user))
             {
                 claim.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            int expiryInMinutes = 24 * 60;
+            int expiryInMinutes = 1;
             int refreshTokenExpiryInMinutes = 24 * 60 * 7; // 7 days
             var token = GenerateAccessToken(claim, expiryInMinutes);
             var refreshToken = await GenerateRefreshToken(user);
@@ -105,16 +96,20 @@ public class UserController : ControllerBase
     [HttpGet]
     public IEnumerable<IdentityUser> GetAll()
     {
-        return _userManager.Users.ToList();
+        return userManager.Users.ToList();
     }
 
+    [HttpPost("refresh")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Refresh([FromBody] UserRefreshModel model)
     {
         var principal = GetPrincipalFromExpiredToken(model.AccessToken);
 
         if (principal?.Identity?.Name is null)
             return Unauthorized();
-        var user = await _userManager.FindByNameAsync(principal.Identity.Name);
+        var user = await userManager.FindByNameAsync(principal.Identity.Name);
 
         if (user is null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime < DateTime.UtcNow)
             return Unauthorized();
@@ -135,14 +130,16 @@ public class UserController : ControllerBase
         });
     }
     
+    //HELPER FUCTIONS
+    
     private JwtSecurityToken GenerateAccessToken(IEnumerable<Claim>? claims, int expiryInMinutes)
     {
         var signinKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["jwt:key"] ?? throw new Exception("jwt:key not found in appsettings.json")));
+            Encoding.UTF8.GetBytes(configuration["jwt:key"] ?? throw new Exception("jwt:key not found in appsettings.json")));
 
         return new JwtSecurityToken(
-            issuer: "movieclub.com",
-            audience: "movieclub.com",
+            issuer: configuration["jwt:ValidIssuer"],  
+            audience: configuration["jwt:ValidAudience"],
             claims: claims?.ToArray(),
             expires: DateTime.Now.AddMinutes(expiryInMinutes),
             signingCredentials: new SigningCredentials(signinKey, SecurityAlgorithms.HmacSha256)
@@ -157,19 +154,19 @@ public class UserController : ControllerBase
             rng.GetBytes(randomNumber);
             string result = Convert.ToBase64String(randomNumber);
             user.RefreshToken = result;
-            await _userManager.UpdateAsync(user);
+            await userManager.UpdateAsync(user);
             return result;
         }
     }
     
     private ClaimsPrincipal? GetPrincipalFromExpiredToken (string token) 
     {
-        var secret = _configuration["jwt:key"] ?? throw new InvalidOperationException("Secret not configured");
+        var secret = configuration["jwt:key"] ?? throw new InvalidOperationException("Secret not configured");
 
         var validation = new TokenValidationParameters
         {
-            ValidIssuer = _configuration["JWT:ValidIssuer"],
-            ValidAudience = _configuration["JWT:ValidAudience"],
+            ValidIssuer = configuration["JWT:ValidIssuer"],
+            ValidAudience = configuration["JWT:ValidAudience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
             ValidateLifetime = false
         };

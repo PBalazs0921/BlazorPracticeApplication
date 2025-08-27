@@ -99,7 +99,7 @@ builder.Services.AddAuthentication(option =>
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidAudience = "movieclub.com",
+            ValidAudiences = new[] { "movieclub.com", "http://localhost:5275" },
             ValidIssuer = "movieclub.com",
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["jwt:key"] 
