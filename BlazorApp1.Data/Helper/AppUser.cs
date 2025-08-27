@@ -12,4 +12,6 @@ public class AppUser : IdentityUser
 
     [StringLength(200)]
     public required string RefreshToken { get; set; } = "";
+
+    public required DateTime RefreshTokenExpiryTime { get; set; } = DateTime.Now;
 }

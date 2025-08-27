@@ -6,11 +6,9 @@ using Blazored.SessionStorage;
 
 namespace BlazorApp1.WebAsembly.Services
 {
-    public class AuthenticationService : IAuthenticationService
+    public class AuthenticationService(IHttpClientFactory factory, ISessionStorageService sessionStorageService)
+        : IAuthenticationService
     {
-        private readonly IHttpClientFactory _factory;
-        private ISessionStorageService _sessionStorageService;
-
         private const string JWT_KEY = nameof(JWT_KEY);
         private const string REFRESH_KEY = nameof(REFRESH_KEY);
 
@@ -18,26 +16,20 @@ namespace BlazorApp1.WebAsembly.Services
 
         public event Action<string?>? LoginChange;
 
-        public AuthenticationService(IHttpClientFactory factory, ISessionStorageService sessionStorageService)
-        {
-            _factory = factory;
-            _sessionStorageService = sessionStorageService;
-        }
-
         public async ValueTask<string> GetJwtAsync()
         {
             if (string.IsNullOrEmpty(_jwtCache))
-                _jwtCache = await _sessionStorageService.GetItemAsync<string>(JWT_KEY);
+                _jwtCache = await sessionStorageService.GetItemAsync<string>(JWT_KEY);
 
             return _jwtCache;
         }
 
         public async Task LogoutAsync()
         {
-            var response = await _factory.CreateClient("ServerApi").DeleteAsync("api/authentication/revoke");
+            var response = await factory.CreateClient("ServerApi").DeleteAsync("api/authentication/revoke");
 
-            await _sessionStorageService.RemoveItemAsync(JWT_KEY);
-            await _sessionStorageService.RemoveItemAsync(REFRESH_KEY);
+            await sessionStorageService.RemoveItemAsync(JWT_KEY);
+            await sessionStorageService.RemoveItemAsync(REFRESH_KEY);
 
             _jwtCache = null;
 
@@ -55,7 +47,7 @@ namespace BlazorApp1.WebAsembly.Services
 
         public async Task<DateTime> LoginAsync(UserLoginDto model)
         {
-            var response = await _factory.CreateClient("ServerApi").PostAsync("/User/login",
+            var response = await factory.CreateClient("ServerApi").PostAsync("/User/login",
                                                         JsonContent.Create(model));
 
             if (!response.IsSuccessStatusCode)
@@ -70,17 +62,51 @@ namespace BlazorApp1.WebAsembly.Services
             if (content == null)
                 throw new InvalidDataException();
 
-            await _sessionStorageService.SetItemAsync(JWT_KEY, content.AccessToken);
-            await _sessionStorageService.SetItemAsync(REFRESH_KEY, content.RefreshToken);
-
+            await sessionStorageService.SetItemAsync(JWT_KEY, content.AccessToken);
+            await sessionStorageService.SetItemAsync(REFRESH_KEY, content.RefreshToken);
+            _jwtCache= content.AccessToken;
+            
             LoginChange?.Invoke(GetUsername(content.AccessToken));
 
             return content.AccessTokenExpiration;
         }
 
-        public Task<bool> RefreshAsync()
+        public async Task<bool> RefreshAsync()
         {
-            throw new NotImplementedException();
+            var model = new UserRefreshModel()
+            {
+                AccessToken = sessionStorageService.GetItemAsync<string>(JWT_KEY).Result,
+                RefreshToken = sessionStorageService.GetItemAsync<string>(REFRESH_KEY).Result
+            };
+            var response = await factory.CreateClient("ServerApi").PostAsync("/User/Refresh",
+                JsonContent.Create(model));
+            if (!response.IsSuccessStatusCode)
+            {
+                //LOGOUT
+                await LogoutAsync();
+
+                await sessionStorageService.RemoveItemAsync(JWT_KEY);
+                await sessionStorageService.RemoveItemAsync(REFRESH_KEY);
+                _jwtCache = null;
+                
+                await Console.Out.WriteLineAsync("Refresh failed, logging out: " + response.StatusCode);
+                LoginChange?.Invoke(null);
+                return false;
+            }
+            else
+            {
+                var content = await response.Content.ReadFromJsonAsync<LoginResultDto>();
+                if (content == null)
+                    throw new InvalidDataException();
+
+                await sessionStorageService.SetItemAsync(JWT_KEY, content.AccessToken);
+                await sessionStorageService.SetItemAsync(REFRESH_KEY, content.RefreshToken);
+                _jwtCache= content.AccessToken;
+                
+                LoginChange?.Invoke(GetUsername(content.AccessToken));
+                return true;
+            }
+            
         }
     }
     

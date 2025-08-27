@@ -48,7 +48,8 @@ public class CategoryControllerTests
                 UserName = "admin",
                 FamilyName = null,
                 GivenName = null,
-                RefreshToken = null
+                RefreshToken = null,
+                RefreshTokenExpiryTime = DateTime.Now
             });
     }
 
