@@ -1,9 +1,7 @@
 using System.Security.Claims;
 using BlazorApp1.Data.Helper;
 using BlazorApp1.Entities.Dto;
-using BlazorApp1.Entities.Helper;
 using BlazorApp1.Endpoint.Controllers;
-using BlazorApp1.Logic;
 using BlazorApp1.Logic.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -16,8 +14,6 @@ namespace  UnitTests;
 public class ItemControllerTests
 {
     private readonly Mock<IItemLogic> _mockLogic;
-    private readonly Mock<UserManager<AppUser>> _mockUserManager;
-    private readonly ClaimsPrincipal _adminUser;
     private readonly ItemController _controller;
 
     public ItemControllerTests()
@@ -25,29 +21,29 @@ public class ItemControllerTests
         _mockLogic = new Mock<IItemLogic>();
 
         var store = new Mock<IUserStore<AppUser>>();
-        _mockUserManager = new Mock<UserManager<AppUser>>(store.Object, null, null, null, null, null, null, null, null);
-        _adminUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        var mockUserManager = new Mock<UserManager<AppUser>>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        var adminUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
             new Claim(ClaimTypes.NameIdentifier, "admin-id"),
             new Claim(ClaimTypes.Name, "admin"),
             new Claim(ClaimTypes.Role, "Admin")
         }, "mock"));
         // Create controller and assign user
-        _controller = new ItemController(_mockUserManager.Object, _mockLogic.Object)
+        _controller = new ItemController(mockUserManager.Object, _mockLogic.Object)
         {
             ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext { User = _adminUser }
+                HttpContext = new DefaultHttpContext { User = adminUser }
             }
         };
-        _mockUserManager.Setup(x => x.GetUserAsync(_adminUser))
+        mockUserManager.Setup(x => x.GetUserAsync(adminUser))
             .ReturnsAsync(new AppUser
             {
                 Id = "admin-id",
                 UserName = "admin",
                 FamilyName = null,
                 GivenName = null,
-                RefreshToken = null,
+                RefreshToken = null!,
                 RefreshTokenExpiryTime = DateTime.Now
             });
     }

@@ -7,7 +7,7 @@ namespace BlazorApp1.WebAsembly.Pages.Templates;
 public partial class AddCategory
 {
     [Inject]
-    private ICategoryRepository repository { get; set; } = null!;
+    private ICategoryRepository Repository { get; set; } = null!;
 
     public CategoryCreateDto FormCategory { get; set; } = new CategoryCreateDto();
 
@@ -16,7 +16,7 @@ public partial class AddCategory
     public async Task SubmitAsync()
     {
         Console.WriteLine("ADD CALLED");
-        await repository.AddCategory(FormCategory);
+        await Repository.AddCategory(FormCategory);
         await Added.InvokeAsync();
     }
 }

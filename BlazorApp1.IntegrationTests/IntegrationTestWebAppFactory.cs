@@ -1,5 +1,7 @@
 using BlazorApp1.Data;
+using BlazorApp1.Data.Helper;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -26,7 +28,14 @@ public class IntegrationTestWebAppFactory<TProgram>
     {
         await _container.StartAsync();
         HttpClient = CreateClient();
-        
+        // 3. Seed the database
+        using var scope = Services.CreateScope(); // Services from WebApplicationFactory
+        var scopedServices = scope.ServiceProvider;
+        var context = scopedServices.GetRequiredService<ApplicationDbContext>();
+        var userManager = scopedServices.GetRequiredService<UserManager<AppUser>>();
+        var roleManager = scopedServices.GetRequiredService<RoleManager<IdentityRole>>();
+
+        await SeedData.InitializeAsync(context, userManager, roleManager);
     }
 
     public new async Task DisposeAsync()
@@ -36,7 +45,7 @@ public class IntegrationTestWebAppFactory<TProgram>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration((context, configBuilder) =>
+        builder.ConfigureAppConfiguration((_, configBuilder) =>
         {
             var connectionString = _container.GetConnectionString();
             if (string.IsNullOrEmpty(connectionString))
@@ -51,7 +60,7 @@ public class IntegrationTestWebAppFactory<TProgram>
                 ["ConnectionStrings:DefaultConnection"] = connectionString
             };
 
-            configBuilder.AddInMemoryCollection(inMemorySettings);
+            configBuilder.AddInMemoryCollection(inMemorySettings!);
         });
         builder.ConfigureServices(services =>
         {

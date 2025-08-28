@@ -31,7 +31,7 @@ public class CategoryRepository : ICategoryRepository
     {
         Console.WriteLine($"Delete button clicked for category with Id: {id}");
 
-        var response = await _httpClient!.DeleteAsync($"Category/Delete?id={id}");
+        var response = await _httpClient.DeleteAsync($"Category/Delete?id={id}");
         if (response.IsSuccessStatusCode)
         {
             Console.WriteLine($"Category with Id: {id} deleted successfully.");

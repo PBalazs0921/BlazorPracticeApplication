@@ -6,7 +6,7 @@ public class UserCudDto
 
     public required string Password { get; set; } = "";
 
-    public required string FamilyName { get; set; } = "";
+    public  string FamilyName { get; set; } = "";
 
-    public required string GivenName { get; set; } = "";
+    public string GivenName { get; set; } = "";
 }
