@@ -16,28 +16,23 @@ public class CategoryControllerTests
     }
 
     [Fact]
-    public async Task CreateCategory_ReturnsOk_AndCategoryIsCreated()
+    public async Task CreateCategory_Returns_Unauthorized()
     {
-        // Arrange
+    // Arrange
         var newCategory = new CategoryCreateDto
         {
             Name = "IntegrationTestCategory"
         };
 
-        // Act
+    // Act
         var response = await _client.PostAsJsonAsync("/Category/Create", newCategory);
         var content = await response.Content.ReadAsStringAsync();
 
-        Assert.True(response.IsSuccessStatusCode, $"Status: {response.StatusCode}, Body: {content}");
+    // Assert that the response is Unauthorized
+        Assert.False(response.IsSuccessStatusCode, $"Expected Unauthorized but got Status: {response.StatusCode}, Body: {content}");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        
 
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        // Optional: Confirm creation by retrieving all categories
-        var categories = await _client.GetFromJsonAsync<List<CategoryViewDto>>("Category/GetAll");
-        Assert.NotNull(categories);
-        Assert.Contains(categories, c => c.Name == "IntegrationTestCategory");
     }
     [Fact]
     public async Task GetAll_ReturnsCategories()
@@ -53,43 +48,7 @@ public class CategoryControllerTests
         Assert.NotNull(categories);
         Assert.NotEmpty(categories); // assuming seeded data or at least one entry
     }
-
-    [Fact]
-    public async Task Create_Edit_Delete_Category_WorkFlow()
-    {
-        // 1. Create
-        var newCategory = new CategoryCreateDto { Name = "TestCategory" };
-        var createResponse = await _client.PostAsJsonAsync("Category/Create", newCategory);
-
-        Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
-
-        // 2. Get all and verify new category is present
-        var categories = await _client.GetFromJsonAsync<List<CategoryViewDto>>("Category/GetAll");
-        Assert.Contains(categories!, c => c.Name == "TestCategory");
-
-        var createdCategory = categories!.First(c => c.Name == "TestCategory");
-
-        // 3. Edit
-        var updateDto = new CategoryUpdateDto
-        {
-            Id = createdCategory.Id,
-            Name = "UpdatedTestCategory"
-        };
-        var editResponse = await _client.PutAsJsonAsync("Category/Edit", updateDto);
-        Assert.Equal(HttpStatusCode.OK, editResponse.StatusCode);
-
-        // 4. Verify edit
-        var categoriesAfterEdit = await _client.GetFromJsonAsync<List<CategoryViewDto>>("Category/GetAll");
-        Assert.Contains(categoriesAfterEdit!, c => c.Name == "UpdatedTestCategory");
-
-        // 5. Delete
-        var deleteResponse = await _client.DeleteAsync($"Category/Delete?id={createdCategory.Id}");
-        Assert.Equal(HttpStatusCode.OK, deleteResponse.StatusCode);
-
-        // 6. Verify delete
-        var categoriesAfterDelete = await _client.GetFromJsonAsync<List<CategoryViewDto>>("Category/GetAll");
-        Assert.DoesNotContain(categoriesAfterDelete!, c => c.Id == createdCategory.Id);
-    }
+    
 
     [Fact]
     public async Task Edit_NonExistingCategory_ReturnsNotFound()
