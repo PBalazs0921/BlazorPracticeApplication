@@ -20,7 +20,7 @@ public class CategoryControllerTests
     {
         var store = new Mock<IUserStore<AppUser>>();
         var mockUserManager = new Mock<UserManager<AppUser>>(
-            store.Object, null!, null!, null!, null!, null!, null!, null!, null!
+            store.Object, null, null, null, null, null, null, null, null
         );
 
         _mockCategoryLogic = new Mock<ICategoryLogic>();
@@ -28,7 +28,8 @@ public class CategoryControllerTests
         {
             new Claim(ClaimTypes.NameIdentifier, "admin-id"),
             new Claim(ClaimTypes.Name, "admin"),
-            new Claim(ClaimTypes.Role, "Admin")
+            new Claim(ClaimTypes.Role, "Admin"),
+            new Claim("role", "Admin")
         }, "mock"));
 
         // Create controller and assign user
