@@ -28,7 +28,8 @@ public class CategoryControllerTests
         {
             new Claim(ClaimTypes.NameIdentifier, "admin-id"),
             new Claim(ClaimTypes.Name, "admin"),
-            new Claim(ClaimTypes.Role, "Admin")
+            new Claim(ClaimTypes.Role, "Admin"),
+            new Claim("role", "Admin")
         }, "mock"));
 
         // Create controller and assign user
