@@ -38,7 +38,8 @@ jobs:
 
           # Remove old content and copy new publish files
           rm -rf $tmp_dir/*
-          cp -r ./BlazorApp1/BlazorApp1.WebAsembly/publish/wwwroot/* $tmp_dir/
+          cp -r ./BlazorApp1/BlazorApp1.WebAsembly/publish/* $tmp_dir/
+
 
           cd $tmp_dir
           git add --all
