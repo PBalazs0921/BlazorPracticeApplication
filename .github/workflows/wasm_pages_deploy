@@ -18,11 +18,11 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: Restore Blazor WASM dependencies
+        run: dotnet restore ./BlazorApp1/BlazorApp1.WebAssembly/BlazorApp1.WebAssembly.csproj
 
       - name: Build and publish Blazor WASM
-        run: dotnet publish ./BlazorApp1/BlazorApp1.WebAssembly/BlazorApp1.WebAssembly.csproj -c Release -o publish
+        run: dotnet publish ./BlazorApp1/BlazorApp1.WebAssembly/BlazorApp1.WebAssembly.csproj -c Release -o publish /p:PublishTrimmed=false
 
       - name: Deploy to GitHub Pages Subfolder
         env:
@@ -31,15 +31,25 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          # Clone gh-pages branch
           tmp_dir=$(mktemp -d)
-          git clone --branch gh-pages https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git $tmp_dir
 
-          # Remove old content for this subfolder
+          # Clone or create gh-pages branch
+          if git ls-remote --exit-code --heads https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git gh-pages; then
+            git clone --branch gh-pages https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git $tmp_dir
+          else
+            git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git $tmp_dir
+            cd $tmp_dir
+            git checkout --orphan gh-pages
+            git rm -rf .
+            git commit --allow-empty -m "Initialize gh-pages"
+            git push origin gh-pages
+          fi
+
+          # Remove old content in the subfolder
           rm -rf $tmp_dir/BlazorPracticeApplication
-
-          # Copy new files
           mkdir -p $tmp_dir/BlazorPracticeApplication
+
+          # Copy new published files
           cp -r ./BlazorApp1/BlazorApp1.WebAssembly/publish/wwwroot/* $tmp_dir/BlazorPracticeApplication/
 
           cd $tmp_dir
