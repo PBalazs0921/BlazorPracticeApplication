@@ -24,7 +24,7 @@ jobs:
       - name: Build and publish Blazor WASM
         run: dotnet publish BlazorApp1.WebAsembly/BlazorApp1.WebAsembly.csproj -c Release -o publish /p:PublishTrimmed=false
 
-      - name: Deploy to GitHub Pages Subfolder
+      - name: Deploy to gh-pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -33,26 +33,14 @@ jobs:
 
           tmp_dir=$(mktemp -d)
 
-          # Clone or create gh-pages branch
-          if git ls-remote --exit-code --heads https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git gh-pages; then
-            git clone --branch gh-pages https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git $tmp_dir
-          else
-            git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git $tmp_dir
-            cd $tmp_dir
-            git checkout --orphan gh-pages
-            git rm -rf .
-            git commit --allow-empty -m "Initialize gh-pages"
-            git push origin gh-pages
-          fi
+          # Clone gh-pages branch from the same repo
+          git clone --branch gh-pages https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git $tmp_dir
 
-          # Remove old content in the subfolder
-          rm -rf $tmp_dir/BlazorPracticeApplication
-          mkdir -p $tmp_dir/BlazorPracticeApplication
-
-          # Copy new published files
-          cp -r ./BlazorApp1/BlazorApp1.WebAsembly/publish/wwwroot/* $tmp_dir/BlazorPracticeApplication/
+          # Remove old content and copy new publish files
+          rm -rf $tmp_dir/*
+          cp -r ./BlazorApp1/BlazorApp1.WebAsembly/publish/wwwroot/* $tmp_dir/
 
           cd $tmp_dir
-          git add BlazorPracticeApplication
+          git add --all
           git commit -m "Deploy Blazor WASM $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
           git push origin gh-pages
