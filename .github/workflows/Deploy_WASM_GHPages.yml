@@ -22,7 +22,7 @@ jobs:
         run: dotnet restore BlazorApp1.WebAsembly/BlazorApp1.WebAsembly.csproj
 
       - name: Build and publish Blazor WASM
-        run: dotnet publish BlazorApp1.WebAsembly/BlazorApp1.WebAsembly.csproj -c Release -o publish /p:PublishTrimmed=false
+        run: dotnet publish BlazorApp1.WebAsembly/BlazorApp1.WebAsembly.csproj -c Release -o BlazorApp1.WebAsembly/publish /p:PublishTrimmed=false
 
       - name: Deploy to gh-pages
         env:
