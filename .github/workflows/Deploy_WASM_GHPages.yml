@@ -19,10 +19,10 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore Blazor WASM dependencies
-        run: dotnet restore ./BlazorApp1/BlazorApp1.WebAsembly/BlazorApp1.WebAsembly.csproj
+        run: dotnet restore BlazorApp1.WebAsembly/BlazorApp1.WebAsembly.csproj
 
       - name: Build and publish Blazor WASM
-        run: dotnet publish ./BlazorApp1/BlazorApp1.WebAsembly/BlazorApp1.WebAsembly.csproj -c Release -o publish /p:PublishTrimmed=false
+        run: dotnet publish BlazorApp1.WebAsembly/BlazorApp1.WebAsembly.csproj -c Release -o publish /p:PublishTrimmed=false
 
       - name: Deploy to GitHub Pages Subfolder
         env:
