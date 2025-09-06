@@ -1,0 +1,48 @@
+name: Deploy Blazor WASM to GitHub Pages Subfolder
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build and publish Blazor WASM
+        run: dotnet publish ./BlazorApp1/BlazorApp1.WebAssembly/BlazorApp1.WebAssembly.csproj -c Release -o publish
+
+      - name: Deploy to GitHub Pages Subfolder
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          # Clone gh-pages branch
+          tmp_dir=$(mktemp -d)
+          git clone --branch gh-pages https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git $tmp_dir
+
+          # Remove old content for this subfolder
+          rm -rf $tmp_dir/BlazorPracticeApplication
+
+          # Copy new files
+          mkdir -p $tmp_dir/BlazorPracticeApplication
+          cp -r ./BlazorApp1/BlazorApp1.WebAssembly/publish/wwwroot/* $tmp_dir/BlazorPracticeApplication/
+
+          cd $tmp_dir
+          git add BlazorPracticeApplication
+          git commit -m "Deploy Blazor WASM $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+          git push origin gh-pages
