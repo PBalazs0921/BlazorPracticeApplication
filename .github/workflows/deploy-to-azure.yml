@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master  
+
 env:
   AZURE_WEBAPP_NAME: blazorappPractice1
   AZURE_WEBAPP_PACKAGE_PATH: '.'    
@@ -14,18 +15,21 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: setupDotNet
+      - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with: 
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: buildAndPublish
-        run: |
-          dotnet restore
-          dotnet build --configuration Release
-          dotnet publish -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
+      - name: Restore dependencies
+        run: dotnet restore Endpoint/Endpoint.csproj
 
-      - name: Run Deploy
+      - name: Build
+        run: dotnet build Endpoint/Endpoint.csproj --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish Endpoint/Endpoint.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp --no-build
+
+      - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
