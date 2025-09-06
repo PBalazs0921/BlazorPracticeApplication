@@ -21,13 +21,13 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore Endpoint/Endpoint.csproj
+        run: dotnet restore BlazorApp1/BlazorApp1.Endpoint/BlazorApp1.Endpoint.csproj
 
       - name: Build
-        run: dotnet build Endpoint/Endpoint.csproj --configuration Release --no-restore
+        run: dotnet build BlazorApp1/BlazorApp1.Endpoint/BlazorApp1.Endpoint.csproj --configuration Release --no-restore
 
       - name: Publish
-        run: dotnet publish Endpoint/Endpoint.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp --no-build
+        run: dotnet publish BlazorApp1/BlazorApp1.Endpoint/BlazorApp1.Endpoint.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp --no-build
 
       - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
