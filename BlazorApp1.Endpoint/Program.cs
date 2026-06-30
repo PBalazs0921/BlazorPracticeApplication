@@ -66,7 +66,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         if (string.IsNullOrEmpty(connectionString))
             throw new InvalidOperationException("Connection string 'DefaultConnection' is missing.");
 
-        options.UseMySQL(connectionString);
+        options.UseNpgsql(connectionString);
     }
 });
 
