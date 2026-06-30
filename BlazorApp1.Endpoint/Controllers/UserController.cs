@@ -68,7 +68,6 @@ public class UserController : ControllerBase
         if (result)
         {
 
-            //todo: generate token
             var claim = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.UserName!),

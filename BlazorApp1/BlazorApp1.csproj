@@ -15,10 +15,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Logic\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\BlazorApp1.Entities\BlazorApp1.Entities.csproj" />
       <ProjectReference Include="..\BlazorApp1.Logic\BlazorApp1.Logic.csproj" />
     </ItemGroup>
