@@ -1,71 +1,41 @@
-using BlazorApp1.Data.Helper;
 using BlazorApp1.Entities.Dto;
 using BlazorApp1.Logic.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlazorApp1.Endpoint.Controllers;
 
-
 [ApiController]
 [Route("[controller]")]
-public class CategoryController(UserManager<AppUser> userManager, ICategoryLogic categoryLogic)
-    : ControllerBase
+public class CategoryController(ICategoryLogic categoryLogic) : ControllerBase
 {
-    
-    private UserManager<AppUser> _userManager = userManager;
-    
     [HttpGet("GetAll")]
     public async Task<IEnumerable<CategoryViewDto>> GetAllAsync()
     {
         return await categoryLogic.GetAllItemsAsync();
-        
     }
-    
+
     [HttpPut("Edit")]
+    [Authorize]
     public async Task<IActionResult> Edit([FromBody] CategoryUpdateDto dto)
     {
         var success = await categoryLogic.UpdateItemAsync(dto);
-    
-        if (success)
-            return Ok();
-        else
-            return NotFound("Category not found or update failed.");
+        return success ? Ok() : NotFound("Category not found or update failed.");
     }
-    
+
     [HttpPost("Create")]
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public async Task<IActionResult> Create([FromBody] CategoryCreateDto dto)
     {
-        var user = await _userManager.GetUserAsync(User);
-        if (user != null)
-        {
-            try
-            {
-                var result = await categoryLogic.CreateItemAsync(dto);
-                if (result?.Id != null)
-                    return Ok(result);
-                return BadRequest("Failed to create category.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal Server Error: {ex.Message}");
-            }
-        }        else
-        {
-            // Handle the case when the user is not found
-            // For example, return an error response or throw an exception
-            throw new Exception("User not found");
-        }
+        var result = await categoryLogic.CreateItemAsync(dto);
+        return result?.Id != null ? Ok(result) : BadRequest("Failed to create category.");
     }
 
-    
     [HttpDelete("Delete")]
-    public async Task<bool> Delete([FromQuery] int id)
+    [Authorize]
+    public async Task<IActionResult> Delete([FromQuery] int id)
     {
         var result = await categoryLogic.DeleteCategoryAsync(id);
-        return result;
+        return result ? Ok() : NotFound("Category not found.");
     }
-
 }
