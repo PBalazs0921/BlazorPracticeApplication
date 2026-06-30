@@ -1,4 +1,3 @@
-using System.Text;
 using BlazorApp1.Data;
 using BlazorApp1.Data.Helper;
 using BlazorApp1.Endpoint;
@@ -79,41 +78,26 @@ builder.Services.AddTransient<DtoProvider>();
 builder.Services.AddTransient<ICategoryLogic, CategoryLogic>();
 builder.Services.AddTransient<IItemLogic, ItemLogic>();
 
-builder.Services.AddIdentity<AppUser, IdentityRole>()
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
-
 //AUTH
-builder.Services.AddAuthentication(option =>
-    {
-        option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        option.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.SaveToken = true;
-        options.RequireHttpsMetadata = true;
-        options.TokenValidationParameters = new TokenValidationParameters()
+        options.Authority = $"https://{builder.Configuration["Auth0:Domain"]}/";
+        options.Audience = builder.Configuration["Auth0:Audience"];
+        options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidAudience = "movieclub.com",
-            ValidIssuer = "movieclub.com",
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["jwt:key"] 
-                                       ?? throw new Exception("jwt:key not found in appsettings.json")))
+            ValidateLifetime = true
         };
     });
-
 
 //CORS for webassembly
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5000") // Blazor WASM URL
+        policy.WithOrigins("http://localhost:5126", "https://localhost:7163")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -124,17 +108,6 @@ app.UseCors();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    // Create the database schema automatically only in dev
-    using var scope = app.Services.CreateScope();
-    var services = scope.ServiceProvider;
-
-    var db = services.GetRequiredService<ApplicationDbContext>();
-    var userManager = services.GetRequiredService<UserManager<AppUser>>();
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
-    db.Database.EnsureCreated();
-    await SeedData.InitializeAsync(db, userManager, roleManager);
-
     app.UseSwagger();
     app.UseSwaggerUI();
 }

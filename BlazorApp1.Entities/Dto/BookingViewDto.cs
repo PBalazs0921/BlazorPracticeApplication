@@ -11,6 +11,6 @@ public class BookingViewDto
     public int ItemId { get; set; }
     public int Price { get; set; }
     public string Comment { get; set; } = "";
-    public User User { get; set; }
+    public string UserName { get; set; }
 
 }

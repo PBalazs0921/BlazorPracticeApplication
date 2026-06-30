@@ -26,10 +26,6 @@ public class DtoProvider
             cfg.CreateMap<CategoryCreateDto, Category>();
             cfg.CreateMap<CategoryUpdateDto, Category>();
 
-            cfg.CreateMap<User, UserViewDto>();
-            cfg.CreateMap<UserCreateDto, User>();
-            cfg.CreateMap<UserUpdateDto, User>();
-
 
         });
         Mapper = new Mapper(config);

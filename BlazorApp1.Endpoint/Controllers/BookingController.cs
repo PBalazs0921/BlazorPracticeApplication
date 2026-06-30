@@ -1,25 +1,23 @@
-using BlazorApp1.Data.Helper;
 using BlazorApp1.Entities.Dto;
 using BlazorApp1.Logic;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlazorApp1.Endpoint.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class BookingController(UserManager<AppUser> userManager, BookingLogic bookingLogic)
-    : ControllerBase
+public class BookingController(BookingLogic bookingLogic) : ControllerBase
 {
-    private readonly UserManager<AppUser> _userManager = userManager;
-
     [HttpGet("GetAll")]
+    [Authorize]
     public async Task<IEnumerable<BookingViewDto>> GetAll()
     {
         return await bookingLogic.GetAllBookingsAsync();
     }
 
     [HttpPost("Create")]
+    [Authorize]
     public async Task<IActionResult> Create([FromBody] BookingCreateDto dto)
     {
         try
@@ -34,6 +32,7 @@ public class BookingController(UserManager<AppUser> userManager, BookingLogic bo
     }
 
     [HttpPut("Update")]
+    [Authorize]
     public async Task<IActionResult> Update([FromBody] BookingUpdateDto dto)
     {
         try
@@ -48,12 +47,10 @@ public class BookingController(UserManager<AppUser> userManager, BookingLogic bo
     }
 
     [HttpDelete("Delete")]
+    [Authorize]
     public async Task<IActionResult> Delete([FromQuery] int id)
     {
         var success = await bookingLogic.DeleteItemAsync(id);
-        if (success)
-            return Ok();
-        else
-            return NotFound("Booking not found.");
+        return success ? Ok() : NotFound("Booking not found.");
     }
 }
