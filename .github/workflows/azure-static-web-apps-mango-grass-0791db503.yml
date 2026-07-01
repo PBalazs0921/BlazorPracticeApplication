@@ -18,6 +18,8 @@ jobs:
       - name: Set production API URL
         run: |
           sed -i 's|https://localhost:7011/|${{ secrets.API_BASE_URL }}|g' BlazorApp1.WebAsembly/wwwroot/appsettings.json
+          echo "appsettings after replacement:"
+          cat BlazorApp1.WebAsembly/wwwroot/appsettings.json
 
       - name: Build And Deploy
         id: builddeploy

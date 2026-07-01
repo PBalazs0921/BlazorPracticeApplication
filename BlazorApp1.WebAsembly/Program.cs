@@ -21,8 +21,12 @@ builder.Services.AddOidcAuthentication(options =>
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddTransient<AuthenticationHandler>();
 
+var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"];
+if (string.IsNullOrWhiteSpace(apiBaseUrl))
+    throw new InvalidOperationException("ApiSettings:BaseUrl is not configured.");
+
 builder.Services.AddHttpClient("ServerApi")
-    .ConfigureHttpClient(c => c.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? ""))
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri(apiBaseUrl))
     .AddHttpMessageHandler<AuthenticationHandler>();
 
 await builder.Build().RunAsync();
