@@ -13,6 +13,7 @@ builder.Services.AddOidcAuthentication(options =>
     options.ProviderOptions.Authority = $"https://{builder.Configuration["Auth0:Domain"]}/";
     options.ProviderOptions.ClientId = builder.Configuration["Auth0:ClientId"]!;
     options.ProviderOptions.ResponseType = "code";
+    options.ProviderOptions.AdditionalProviderParameters.Add("audience", builder.Configuration["Auth0:Audience"]!);
     options.ProviderOptions.DefaultScopes.Add("openid");
     options.ProviderOptions.DefaultScopes.Add("profile");
     options.ProviderOptions.DefaultScopes.Add("email");

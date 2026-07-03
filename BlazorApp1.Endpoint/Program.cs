@@ -1,11 +1,8 @@
 using BlazorApp1.Data;
-using BlazorApp1.Data.Helper;
-using BlazorApp1.Endpoint;
 using BlazorApp1.Logic;
 using BlazorApp1.Logic.Dto;
 using BlazorApp1.Logic.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
