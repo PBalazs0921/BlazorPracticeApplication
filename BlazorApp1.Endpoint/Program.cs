@@ -1,3 +1,5 @@
+using Azure.Monitor.OpenTelemetry.AspNetCore;
+using OpenTelemetry.Trace;
 using BlazorApp1.Data;
 using BlazorApp1.Logic;
 using BlazorApp1.Logic.Dto;
@@ -88,6 +90,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true
         };
     });
+
+//OPENTELEMETRY
+builder.Services.AddOpenTelemetry()
+    .UseAzureMonitor()
+    .WithTracing(t => t.AddEntityFrameworkCoreInstrumentation());
 
 //CORS for webassembly
 builder.Services.AddCors(options =>
