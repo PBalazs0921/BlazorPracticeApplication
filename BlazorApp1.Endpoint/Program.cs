@@ -1,11 +1,15 @@
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using OpenTelemetry.Trace;
 using BlazorApp1.Data;
+using BlazorApp1.Endpoint.DelegatingHandlers;
+using BlazorApp1.Endpoint.Services;
+using BlazorApp1.Endpoint.Settings;
 using BlazorApp1.Logic;
 using BlazorApp1.Logic.Dto;
 using BlazorApp1.Logic.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -18,6 +22,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddOptions<ResendSettings>()
+    .BindConfiguration(ResendSettings.ConfigurationSection)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AddTransient<ResendAuthHandler>();
+
+builder.Services.AddHttpClient<ResendEmailClient>(client =>
+    {
+        client.BaseAddress = new Uri("https://api.resend.com/");
+    })
+    .AddHttpMessageHandler<ResendAuthHandler>();
 
 //SWAGGER, TOKEN
 builder.Services.AddSwaggerGen(option =>

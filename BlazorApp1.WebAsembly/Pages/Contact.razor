@@ -1,0 +1,81 @@
+@page "/contact"
+@using BlazorApp1.Entities.Dto
+@inject IHttpClientFactory HttpClientFactory
+
+<PageTitle>Contact</PageTitle>
+
+<h3>Contact Me</h3>
+
+@if (_sendSucceeded)
+{
+    <div class="alert alert-success">Thanks for your message! I'll get back to you soon.</div>
+}
+else
+{
+    <EditForm Model="@_form" OnValidSubmit="SendMessage">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="name">Name</label>
+            <InputText id="name" class="form-control" @bind-Value="_form.Name" />
+            <ValidationMessage For="@(() => _form.Name)" />
+        </div>
+
+        <div class="form-group mt-2">
+            <label for="email">Email</label>
+            <InputText id="email" class="form-control" @bind-Value="_form.Email" />
+            <ValidationMessage For="@(() => _form.Email)" />
+        </div>
+
+        <div class="form-group mt-2">
+            <label for="message">Message</label>
+            <InputTextArea id="message" class="form-control" rows="6" @bind-Value="_form.Message" />
+            <ValidationMessage For="@(() => _form.Message)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3" disabled="@_isSending">
+            @(_isSending ? "Sending..." : "Send")
+        </button>
+    </EditForm>
+
+    @if (_errorMessage != null)
+    {
+        <div class="alert alert-danger mt-3">@_errorMessage</div>
+    }
+}
+
+@code {
+    private ContactFormDto _form = new();
+    private bool _isSending;
+    private bool _sendSucceeded;
+    private string? _errorMessage;
+
+    private async Task SendMessage()
+    {
+        _isSending = true;
+        _errorMessage = null;
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("ServerApi");
+            var response = await client.PostAsJsonAsync("Contact/Send", _form);
+            if (response.IsSuccessStatusCode)
+            {
+                _sendSucceeded = true;
+            }
+            else
+            {
+                _errorMessage = "Something went wrong sending your message. Please try again later.";
+            }
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Could not reach the server. Please try again later.";
+        }
+        finally
+        {
+            _isSending = false;
+        }
+    }
+}
