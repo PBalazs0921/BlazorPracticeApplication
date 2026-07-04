@@ -1,7 +1,19 @@
 @page "/authentication/{action}"
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
-<RemoteAuthenticatorView Action="@Action" />
+<RemoteAuthenticatorView Action="@Action">
+    <LogInFailed>
+        <div class="alert alert-danger">
+            <strong>Sign-in failed:</strong> @context
+        </div>
+        <a class="btn btn-primary" href="authentication/login">Try again</a>
+    </LogInFailed>
+    <LogOutFailed>
+        <div class="alert alert-danger">
+            <strong>Sign-out failed:</strong> @context
+        </div>
+    </LogOutFailed>
+</RemoteAuthenticatorView>
 
 @code {
     [Parameter] public string? Action { get; set; }
