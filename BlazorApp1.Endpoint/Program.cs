@@ -93,7 +93,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 //OPENTELEMETRY
 builder.Services.AddOpenTelemetry()
-    .UseAzureMonitor()
+    .UseAzureMonitor(o => o.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"])
     .WithTracing(t => t.AddEntityFrameworkCoreInstrumentation());
 
 //CORS for webassembly
