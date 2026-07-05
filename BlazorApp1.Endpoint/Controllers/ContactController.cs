@@ -1,6 +1,8 @@
 using BlazorApp1.Endpoint.Services;
 using BlazorApp1.Entities.Dto;
 using Microsoft.AspNetCore.Mvc;
+using Polly.CircuitBreaker;
+using Polly.Timeout;
 
 namespace BlazorApp1.Endpoint.Controllers;
 
@@ -19,6 +21,14 @@ public class ContactController(ResendEmailClient emailClient) : ControllerBase
         catch (EmailSendException ex)
         {
             return StatusCode(StatusCodes.Status502BadGateway, $"Email provider rejected the request: {ex.StatusCode}");
+        }
+        catch (TimeoutRejectedException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Email provider timed out.");
+        }
+        catch (BrokenCircuitException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Email sending is temporarily unavailable.");
         }
     }
 }
