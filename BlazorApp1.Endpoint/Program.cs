@@ -32,7 +32,11 @@ builder.Services.AddHttpClient<ResendEmailClient>(client =>
     {
         client.BaseAddress = new Uri("https://api.resend.com/");
     })
-    .AddHttpMessageHandler<ResendAuthHandler>();
+    .AddHttpMessageHandler<ResendAuthHandler>()
+    // Rate limiter -> 30s total timeout -> retry (3x, exponential + jitter,
+    // honors Retry-After) -> circuit breaker -> 10s per-attempt timeout.
+    // Retries are duplicate-safe because the client sends an Idempotency-Key.
+    .AddStandardResilienceHandler();
 
 //SWAGGER, TOKEN
 builder.Services.AddSwaggerGen(option =>

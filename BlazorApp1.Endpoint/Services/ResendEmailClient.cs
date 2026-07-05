@@ -22,7 +22,13 @@ public sealed class ResendEmailClient(HttpClient httpClient)
             ReplyTo = email
         };
 
-        var response = await httpClient.PostAsJsonAsync("emails", request, ct);
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "emails");
+        httpRequest.Content = JsonContent.Create(request);
+        // One key per logical send, reused across retry attempts, so Resend
+        // dedupes if a retry fires after a request that actually went through
+        httpRequest.Headers.Add("Idempotency-Key", $"contact-form/{Guid.NewGuid()}");
+
+        var response = await httpClient.SendAsync(httpRequest, ct);
 
         if (!response.IsSuccessStatusCode)
             throw new EmailSendException(response.StatusCode, await response.Content.ReadAsStringAsync(ct));
