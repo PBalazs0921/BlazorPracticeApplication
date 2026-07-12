@@ -4,21 +4,33 @@ using BlazorApp1.Entities.Dto;
 using BlazorApp1.Entities.Entity;
 using BlazorApp1.Logic.Dto;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace BlazorApp1.Logic;
 
 public class BookingLogic(
-    Repository<Booking> repository, 
-    IUnitOfWork uow, 
+    Repository<Booking> repository,
+    IUnitOfWork uow,
+    IMemoryCache cache,
     DtoProvider dtoProvider)
 {
+    private const string AllBookingsCacheKey = "bookings_all";
+
+    // Shorter than other lists because BookingViewDto embeds a UserName snapshot.
+    // A user rename isn't observed here, so this list can serve a stale name
+    // until it expires — bounded to a few seconds.
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(10);
+
     private readonly Mapper _mapper = dtoProvider.Mapper;
 
     public async Task<IEnumerable<BookingViewDto>> GetAllBookingsAsync()
     {
-        Console.WriteLine("GetAllItems called");
-        var bookings = await repository.GetAllAsync();
-        return bookings.Select(x => _mapper.Map<BookingViewDto>(x));
+        return await cache.GetOrCreateAsync(AllBookingsCacheKey, async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = CacheDuration;
+            var bookings = await repository.GetAllAsync();
+            return bookings.Select(x => _mapper.Map<BookingViewDto>(x)).ToList();
+        }) ?? [];
     }
 
     private bool IsBookingValid(Booking booking, int? editId = null)
@@ -30,20 +42,22 @@ public class BookingLogic(
             return false;
         }
         
-        var Bookings = repository.GetAll().Where(x => x.ItemId == booking.ItemId && x.Id != editId);
-        if (!Bookings.Any())
+        var bookings = repository.GetAll()
+            .Where(x => x.ItemId == booking.ItemId && x.Id != editId)
+            .ToList();
+        if (bookings.Count == 0)
         {
             //If there are no booking for the item, the booking is valid
             return true;
         }
         else
         {
-            Console.WriteLine("found: " + Bookings.Count() + " bookings");
+            Console.WriteLine("found: " + bookings.Count + " bookings");
             //if there are bookings, we have checked.
             //If the latest toDate is equals, or 1 day before the current. its valid
-            
-            var latestBooking = Bookings.OrderByDescending(x => x.ToDate).First();
-            var earliestBooking = Bookings.OrderByDescending(x => x.ToDate).Last();
+
+            var latestBooking = bookings.OrderByDescending(x => x.ToDate).First();
+            var earliestBooking = bookings.OrderByDescending(x => x.ToDate).Last();
             
             //We assume that the item can be lent out on the same day
 
@@ -74,9 +88,10 @@ public class BookingLogic(
         {
             uow.Create(item);
             await uow.SaveChangesAsync();
+            cache.Remove(AllBookingsCacheKey);
             return true;
         }
-        
+
         throw new Exception("Booking is not valid");
         
     }
@@ -92,6 +107,7 @@ public class BookingLogic(
         {
             _mapper.Map(booking, item);
             await uow.SaveChangesAsync();
+            cache.Remove(AllBookingsCacheKey);
             return true;
         }
 
@@ -107,7 +123,8 @@ public class BookingLogic(
 
         uow.Remove(item);
         await uow.SaveChangesAsync();
+        cache.Remove(AllBookingsCacheKey);
         return true;
     }
-    
+
 }

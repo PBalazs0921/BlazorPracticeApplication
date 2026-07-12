@@ -90,6 +90,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddTransient(typeof(Repository<>));
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddTransient<DtoProvider>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
