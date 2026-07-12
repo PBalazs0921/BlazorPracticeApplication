@@ -3,10 +3,14 @@ using BlazorApp1.Data;
 using BlazorApp1.Entities.Dto;
 using BlazorApp1.Entities.Entity;
 using BlazorApp1.Logic.Dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlazorApp1.Logic;
 
-public class BookingLogic(Repository<Booking> repository, DtoProvider dtoProvider)
+public class BookingLogic(
+    Repository<Booking> repository, 
+    IUnitOfWork uow, 
+    DtoProvider dtoProvider)
 {
     private readonly Mapper _mapper = dtoProvider.Mapper;
 
@@ -68,26 +72,26 @@ public class BookingLogic(Repository<Booking> repository, DtoProvider dtoProvide
         var item = _mapper.Map<Booking>(dto);
         if (IsBookingValid(item))
         {
-            await repository.CreateAsync(item);
+            uow.Create(item);
+            await uow.SaveChangesAsync();
             return true;
         }
-        else
-        {
-            throw new Exception("Booking is not valid");
-        }
+        
+        throw new Exception("Booking is not valid");
         
     }
     
     public async Task<bool> UpdateBookingAsync(BookingUpdateDto booking)
     {
         Console.WriteLine("UpdateBookingAsync called");
-        var item = await repository.FindByIdAsync(booking.Id);
-        if (item == null)             throw new Exception("Booking not found");
+        var item = await uow.Any<Booking>()
+            .FirstOrDefaultAsync(x => x.Id == booking.Id);
+        if (item == null) throw new Exception("Booking not found");
 
         if (IsBookingValid(_mapper.Map<Booking>(booking), booking.Id))
         {
             _mapper.Map(booking, item);
-            await repository.UpdateAsync(item);
+            await uow.SaveChangesAsync();
             return true;
         }
 
@@ -97,9 +101,12 @@ public class BookingLogic(Repository<Booking> repository, DtoProvider dtoProvide
 
     public async Task<bool> DeleteItemAsync(int id)
     {
-        var item = await repository.FindByIdAsync(id);
+        var item = await uow.Any<Booking>()
+            .FirstOrDefaultAsync(x => x.Id == id);
         if (item == null) return false;
-        await repository.DeleteAsync(item);
+
+        uow.Remove(item);
+        await uow.SaveChangesAsync();
         return true;
     }
     

@@ -4,17 +4,22 @@ using BlazorApp1.Entities.Dto;
 using BlazorApp1.Entities.Entity;
 using BlazorApp1.Logic.Dto;
 using BlazorApp1.Logic.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlazorApp1.Logic;
 
-public class ItemLogic(Repository<Item> repository, DtoProvider dtoProvider):IItemLogic
+public class ItemLogic(
+    Repository<Item> repository, 
+    IUnitOfWork uow, 
+    DtoProvider dtoProvider):IItemLogic
 {
     private readonly Mapper _mapper = dtoProvider.Mapper;
 
     public async Task<int?> CreateItemAsync(ItemCreateDto dto)
     {
         var item = _mapper.Map<Item>(dto);
-        await repository.CreateAsync(item);
+        uow.Create(item);
+        await uow.SaveChangesAsync();
         return item.Id;
     }
     
@@ -26,24 +31,23 @@ public class ItemLogic(Repository<Item> repository, DtoProvider dtoProvider):IIt
     }
     public async Task<bool> UpdateItemAsync(ItemUpdateDto dto)
     {
-        var itemToUpdate = await repository.FindByIdAsync(dto.Id);
-        if (itemToUpdate != null)
-        {
-            _mapper.Map(dto, itemToUpdate);
-            await repository.UpdateAsync(itemToUpdate);
-            return true;
-        }
-        return false;
+        var itemToUpdate = await uow.Any<Item>()
+            .FirstOrDefaultAsync(x => x.Id == dto.Id);
+        if (itemToUpdate == null) return false;
+
+        _mapper.Map(dto, itemToUpdate);
+        await uow.SaveChangesAsync();
+        return true;
     }
 
     public async Task<bool> DeleteItemAsync(int id)
     {
-        Console.WriteLine("DeleteItem pressed: " + id);
-    
-        var item = await repository.FindByIdAsync(id);
+        var item = await uow.Any<Item>()
+            .FirstOrDefaultAsync(x => x.Id == id);
         if (item == null) return false;
 
-        await repository.DeleteAsync(item);
+        uow.Remove(item);
+        await uow.SaveChangesAsync();
         return true;
     }
 }
