@@ -4,18 +4,23 @@ using BlazorApp1.Entities.Dto;
 using BlazorApp1.Entities.Entity;
 using BlazorApp1.Logic.Dto;
 using BlazorApp1.Logic.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlazorApp1.Logic;
 
-public class CategoryLogic(Repository<Category> repository, DtoProvider dtoProvider) : ICategoryLogic
+public class CategoryLogic(
+    Repository<Category> repository, 
+    DtoProvider dtoProvider,
+    IUnitOfWork uow) : ICategoryLogic
 {
     private readonly Mapper _mapper = dtoProvider.Mapper;
 
 
     public async Task<CategoryViewDto?> CreateItemAsync(CategoryCreateDto dto)
-    {
+    {   
         var category = _mapper.Map<Category>(dto);
-        await repository.CreateAsync(category);
+        uow.Create(category);
+        await uow.SaveChangesAsync();
         return _mapper.Map<CategoryViewDto>(category);
     }
 
@@ -27,25 +32,23 @@ public class CategoryLogic(Repository<Category> repository, DtoProvider dtoProvi
     
     public async Task<bool> UpdateItemAsync(CategoryUpdateDto dto)
     {
-        var categoryToUpdate = await repository.FindByIdAsync(dto.Id);
-        if (categoryToUpdate != null && categoryToUpdate.Id == dto.Id)
-        {
-            _mapper.Map(dto, categoryToUpdate);
-            await repository.UpdateAsync(categoryToUpdate);
-            return true;
-        }
+        var categoryToUpdate = await uow.Any<Category>()
+            .FirstOrDefaultAsync(x => x.Id == dto.Id);
+        if (categoryToUpdate == null) return false;
 
-        return false;
+        _mapper.Map(dto, categoryToUpdate);
+        await uow.SaveChangesAsync();
+        return true;
     }
-    
+
     public async Task<bool> DeleteCategoryAsync(int id)
     {
-        Console.WriteLine("DeleteItem pressed: " + id);
-    
-        var item = await repository.FindByIdAsync(id);
+        var item = await uow.Any<Category>()
+            .FirstOrDefaultAsync(x => x.Id == id);
         if (item == null) return false;
 
-        await repository.DeleteAsync(item);
+        uow.Remove(item);
+        await uow.SaveChangesAsync();
         return true;
     }
 }

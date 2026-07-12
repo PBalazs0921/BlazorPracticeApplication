@@ -92,6 +92,7 @@ builder.Services.AddTransient(typeof(Repository<>));
 
 builder.Services.AddTransient<DtoProvider>();
 
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddTransient<ICategoryLogic, CategoryLogic>();
 builder.Services.AddTransient<IItemLogic, ItemLogic>();
