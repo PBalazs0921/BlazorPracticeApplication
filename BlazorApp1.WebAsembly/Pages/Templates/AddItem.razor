@@ -1,0 +1,21 @@
+@using BlazorApp1.Entities.Dto
+
+<h3>Add Item</h3>
+<EditForm Model="@FormItem" OnValidSubmit="@SubmitAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-group">
+        <label for="name">Name</label>
+        <InputText id="name" class="form-control" @bind-Value="FormItem.Name" />
+    </div>
+    <div class="form-group">
+        <label for="categoryId">Category Id</label>
+        <InputNumber id="categoryId" class="form-control" @bind-Value="FormItem.CategoryId" />
+    </div>
+    <div class="form-group">
+        <label for="price">Price</label>
+        <InputNumber id="price" class="form-control" @bind-Value="FormItem.Price" />
+    </div>
+
+    <button type="submit" class="btn btn-success mt-2">Create</button>
+</EditForm>

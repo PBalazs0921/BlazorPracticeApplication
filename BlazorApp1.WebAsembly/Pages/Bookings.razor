@@ -1,0 +1,59 @@
+@page "/Bookings"
+@using BlazorApp1.Entities.Dto
+@using BlazorApp1.WebAsembly.Pages.Templates
+
+<h3>Bookings List</h3>
+
+@if (_bookings == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <TableTemplate
+        InputItem="BookingViewDto"
+        InputItems="_bookings"
+        OnDelete="@DeleteBooking"
+        OnEdit="@StartEdit"
+        EnableActions="true" />
+
+    <h3>Create New Booking</h3>
+    <button class="btn btn-primary" @onclick="() => _isAddMode = true">Add Booking</button>
+    @if (_isAddMode)
+    {
+        <AddBooking Added="BookingAdded"></AddBooking>
+    }
+
+    @if (_isEditMode)
+    {
+        <h3>Edit Booking</h3>
+        <EditForm Model="@_editBooking" OnValidSubmit="HandleEditBooking">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="editFromDate">From Date</label>
+                <InputDate id="editFromDate" class="form-control" @bind-Value="_editBooking!.FromDate" />
+            </div>
+            <div class="form-group">
+                <label for="editToDate">To Date</label>
+                <InputDate id="editToDate" class="form-control" @bind-Value="_editBooking!.ToDate" />
+            </div>
+            <div class="form-group">
+                <label for="editUserId">User Id</label>
+                <InputNumber id="editUserId" class="form-control" @bind-Value="_editBooking!.UserId" />
+            </div>
+            <div class="form-group">
+                <label for="editItemId">Item Id</label>
+                <InputNumber id="editItemId" class="form-control" @bind-Value="_editBooking!.ItemId" />
+            </div>
+            <div class="form-group">
+                <label for="editComment">Comment</label>
+                <InputText id="editComment" class="form-control" @bind-Value="_editBooking!.Comment" />
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-2">Save Changes</button>
+            <button type="button" class="btn btn-secondary mt-2" @onclick="CancelEdit">Cancel</button>
+        </EditForm>
+    }
+}

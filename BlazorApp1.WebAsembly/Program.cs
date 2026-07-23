@@ -20,6 +20,8 @@ builder.Services.AddOidcAuthentication(options =>
 });
 
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddTransient<AuthenticationHandler>();
 
 var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"];

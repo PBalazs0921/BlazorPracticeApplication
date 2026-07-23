@@ -1,0 +1,52 @@
+@page "/Items"
+@using BlazorApp1.Entities.Dto
+@using BlazorApp1.WebAsembly.Pages.Templates
+
+<h3>Items List</h3>
+
+@if (_items == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <TableTemplate
+        InputItem="ItemViewDto"
+        InputItems="_items"
+        OnDelete="@DeleteItem"
+        OnEdit="@StartEdit"
+        EnableActions="true" />
+
+    <h3>Create New Item</h3>
+    <button class="btn btn-primary" @onclick="() => _isAddMode = true">Add Item</button>
+    @if (_isAddMode)
+    {
+        <AddItem Added="ItemAdded"></AddItem>
+    }
+
+    @if (_isEditMode)
+    {
+        <h3>Edit Item</h3>
+        <EditForm Model="@_editItem" OnValidSubmit="HandleEditItem">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="editName">Name</label>
+                <InputText id="editName" class="form-control" @bind-Value="_editItem!.Name" />
+                <ValidationMessage For="@(() => _editItem.Name)" />
+            </div>
+            <div class="form-group">
+                <label for="editCategoryId">Category Id</label>
+                <InputNumber id="editCategoryId" class="form-control" @bind-Value="_editItem!.CategoryId" />
+            </div>
+            <div class="form-group">
+                <label for="editPrice">Price</label>
+                <InputNumber id="editPrice" class="form-control" @bind-Value="_editItem!.Price" />
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-2">Save Changes</button>
+            <button type="button" class="btn btn-secondary mt-2" @onclick="CancelEdit">Cancel</button>
+        </EditForm>
+    }
+}
